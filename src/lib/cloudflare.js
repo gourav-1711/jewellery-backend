@@ -71,12 +71,10 @@ const uploadToR2 = async (file, folder = "users") => {
       ACL: "public-read",
     });
 
-    
-
     await s3Client.send(command);
 
     // Generate public URL (if public access is enabled)
-    const fileUrl = `https://${process.env.CLOUDFLARE_BUCKET_NAME}.${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com/${fileName}`;
+    const fileUrl = `${process.env.CLOUDFARE_PUBLIC_URL}/${folder}/${fileName}`;
 
     return {
       success: true,
