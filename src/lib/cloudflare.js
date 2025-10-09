@@ -30,7 +30,7 @@ const generateFileName = (originalName, folder = "") => {
  * Optimize image using Sharp
  */
 const optimizeImage = async (buffer, options = {}) => {
-  await sharp(buffer)
+  return await sharp(buffer)
     .resize({
       width: 1200,
       fit: sharp.fit.inside,
@@ -38,7 +38,6 @@ const optimizeImage = async (buffer, options = {}) => {
     })
     .toFormat("webp", {
       quality: 85,
-
       effort: 6,
     })
     .toBuffer();
@@ -50,25 +49,24 @@ const optimizeImage = async (buffer, options = {}) => {
 const uploadToR2 = async (file, folder = "users") => {
   try {
     // Generate unique filename
-    const fileName = generateFileName(file.originalname, folder);
+    let fileBuffer = await optimizeImage(file.buffer);
+    let fileName = generateFileName(file.originalname, folder);
+    let contentType = "image/webp";
 
-    // Optimize image if it's an image
-    const isImage = file.mimetype.startsWith("image/");
-    const fileBuffer = isImage ? await optimizeImage(file.buffer) : file.buffer;
-
+    fileName = fileName.replace(path.extname(fileName), ".webp");
     // Upload to R2
     const command = new PutObjectCommand({
       Bucket: process.env.CLOUDFLARE_BUCKET_NAME,
       Key: fileName,
       Body: fileBuffer,
-      ContentType: file.mimetype,
+      ContentType: contentType,
       ACL: "public-read",
     });
 
     await s3Client.send(command);
 
-    // Generate public URL (if public access is enabled)
-    const fileUrl = `${process.env.CLOUDFARE_PUBLIC_URL}/${folder}/${fileName}`;
+    // Generate public URL (if public access is enabled) // slash is in env
+    const fileUrl = `${process.env.CLOUDFARE_PUBLIC_URL}${fileName}`;
 
     return {
       success: true,
