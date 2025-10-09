@@ -74,8 +74,6 @@ const uploadToR2 = async (file, folder = "users") => {
       success: true,
       url: fileUrl,
       fileName,
-      size: fileBuffer.length,
-      mimeType: file.mimetype,
     };
   } catch (error) {
     console.error("R2 Upload Error:", error);
