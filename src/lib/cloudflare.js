@@ -30,22 +30,16 @@ const generateFileName = (originalName, folder = "") => {
  * Optimize image using Sharp
  */
 const optimizeImage = async (buffer, options = {}) => {
-  const { quality = 80, width = 1200, height = 1200 } = options;
-
-  return sharp(buffer)
+  await sharp(buffer)
     .resize({
-      width,
-      height,
-      fit: "inside",
+      width: 1200,
+      fit: sharp.fit.inside,
       withoutEnlargement: true,
     })
-    .webp({
-      quality,
-      alphaQuality: 85,
-      lossless: false,
-      nearLossless: true,
-      smartSubsample: true,
-      effort: 6, // Balanced between speed and compression
+    .toFormat("webp", {
+      quality: 85,
+
+      effort: 6,
     })
     .toBuffer();
 };
