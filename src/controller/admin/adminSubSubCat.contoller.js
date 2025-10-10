@@ -1,5 +1,4 @@
-const SlugFunc = require("../../lib/slugFunc");
-const category = require("../../models/category");
+const {generateUniqueSlug} = require("../../lib/slugFunc");
 const subSubCategory = require("../../models/subSubCategory");
 const { uploadToR2 } = require('../../lib/cloudflare');
 require("dotenv").config();
@@ -20,7 +19,7 @@ exports.create = async (request, response) => {
       }
     }
 
-    const slug = await SlugFunc(category, data.name);
+    const slug = await generateUniqueSlug(subSubCategory, data.name);
     data.slug = slug;
 
     const ress = await data.save();
@@ -63,7 +62,7 @@ exports.view = async (request, response) => {
     let limitValue = 10;
     let skipValue;
 
-    const andCondition = [{ deleted_at: null }];
+    const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
     let filter = {};
@@ -121,7 +120,7 @@ exports.view = async (request, response) => {
       _total_pages: Math.ceil(totalRecords / limitValue),
       _total_records: totalRecords,
       _current_page: Number(pageValue),
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/subsubcategories/`,
+     
     };
 
     response.send(output);
@@ -145,7 +144,7 @@ exports.destroy = async (request, response) => {
       },
       {
         $set: {
-          deleted_at: Date.now(),
+          deletedAt: Date.now(),
         },
       }
     );
@@ -179,7 +178,7 @@ exports.details = async (request, response) => {
       _status: result ? true : false,
       _message: result ? "Data Found" : "No Data Found",
       _data: result,
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/subsubcategories/`,
+    
     };
 
     response.send(output);
@@ -211,7 +210,7 @@ exports.update = async (request, response) => {
       }
     }
 
-    const slug = await SlugFunc(category, data.name);
+    const slug = await generateUniqueSlug(subSubCategory, data.name);
     data.slug = slug;
 
     const ress = await subSubCategory.updateOne(

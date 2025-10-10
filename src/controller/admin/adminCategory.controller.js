@@ -207,7 +207,7 @@ exports.update = async (request, response) => {
       }
     }
 
-    const slug = await SlugFunc(category, data.name);
+    const slug = await generateUniqueSlug(category, data.name);
     data.slug = slug;
 
     const ress = await category.updateOne(

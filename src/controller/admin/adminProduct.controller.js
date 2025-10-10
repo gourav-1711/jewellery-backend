@@ -4,7 +4,7 @@ const Category = require("../../models/category");
 const SubCategory = require("../../models/subCategory");
 const SubSubCategory = require("../../models/subSubCategory");
 const { uploadToR2, deleteFromR2 } = require("../../lib/cloudflare");
-const SlugFunc = require("../../lib/slugFunc");
+const {generateUniqueSlug} = require("../../lib/slugFunc");
 
 // Create Product
 exports.create = async (request, response) => {
@@ -38,7 +38,7 @@ exports.create = async (request, response) => {
     }
 
     // Generate slug
-    const slug = await SlugFunc(Product, data.name);
+    const slug = await generateUniqueSlug(Product, data.name);
     data.slug = slug;
 
     // Validate categories exist (handle both single and multiple)
@@ -131,7 +131,7 @@ exports.view = async (request, response) => {
       inStock,
     } = request.query;
 
-    const query = {};
+    const query = {deletedAt: null};
 
     // Filter by category
     if (category) {
@@ -295,7 +295,7 @@ exports.update = async (request, response) => {
 
     // Update slug if name changed
     if (updateData.name && updateData.name !== existingProduct.name) {
-      const slug = await SlugFunc(Product, updateData.name);
+      const slug = await generateUniqueSlug(Product, updateData.name);
       updateData.slug = slug;
     }
 

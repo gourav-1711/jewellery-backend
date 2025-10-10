@@ -15,11 +15,11 @@ const subCategorySchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    category: {
+    category: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",
       required: [true, "Category reference is required"],
-    },
+    }],
     image: {
       type: String,
       required: [true, "Image URL is required"],

@@ -1,7 +1,7 @@
-const SlugFunc = require("../../lib/slugFunc");
+const {generateUniqueSlug} = require("../../lib/slugFunc");
 const subCategory = require("../../models/subCategory");
 // Import the uploadToR2 function from lib folder
-const { uploadToR2 } = require('../../lib/cloudflare');
+const { uploadToR2 } = require("../../lib/cloudflare");
 require("dotenv").config();
 
 // create
@@ -12,7 +12,7 @@ exports.create = async (request, response) => {
     // Upload image to Cloudflare R2 if file exists
     if (request.file) {
       const uploadResult = await uploadToR2(request.file, "subcategories");
-      
+
       if (uploadResult.success) {
         data.image = uploadResult.url;
       } else {
@@ -20,11 +20,10 @@ exports.create = async (request, response) => {
       }
     }
 
-    const slug = await SlugFunc(subCategory, data.name);
+    const slug = await generateUniqueSlug(subCategory, data.name);
     data.slug = slug;
 
     const ress = await data.save();
-
 
     const output = {
       _status: true,
@@ -64,7 +63,7 @@ exports.view = async (request, response) => {
     let limitValue = 10;
     let skipValue;
 
-    const andCondition = [{ deleted_at: null }];
+    const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
     let filter = {};
@@ -140,7 +139,7 @@ exports.destroy = async (request, response) => {
       },
       {
         $set: {
-          deleted_at: Date.now(),
+          deletedAt: Date.now(),
         },
       }
     );
@@ -174,7 +173,6 @@ exports.details = async (request, response) => {
       _status: result ? true : false,
       _message: result ? "Data Found" : "No Data Found",
       _data: result,
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/subcategories/`,
     };
 
     response.send(output);
@@ -198,7 +196,7 @@ exports.update = async (request, response) => {
     // Upload new image to Cloudflare R2 if file exists
     if (request.file) {
       const uploadResult = await uploadToR2(request.file, "subcategories");
-      
+
       if (uploadResult.success) {
         data.image = uploadResult.url;
       } else {
@@ -206,7 +204,7 @@ exports.update = async (request, response) => {
       }
     }
 
-    const slug = await SlugFunc(category, data.name);
+    const slug = await generateUniqueSlug(subCategory, data.name);
     data.slug = slug;
 
     const ress = await subCategory.updateOne(
