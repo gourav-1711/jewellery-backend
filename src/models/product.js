@@ -10,7 +10,10 @@ const productSchema = new mongoose.Schema(
       match: /^[a-zA-Z 0-9"' ]+$/,
       validate: {
         validator: async function (name) {
-          const existingProduct = await this.constructor.findOne({ name });
+          const existingProduct = await this.constructor.findOne({
+            name,
+            deletedAt: null,
+          });
           return !existingProduct;
         },
         message: "Name already exists",
@@ -55,14 +58,14 @@ const productSchema = new mongoose.Schema(
     subCategory: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "sub-categories",
+        ref: "SubCategories",
         required: [true, " Sub Category is required"],
       },
     ],
     subSubCategory: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "sub-sub-categories",
+        ref: "SubSubCategories",
         required: [true, " Sub Sub Category is required"],
       },
     ],

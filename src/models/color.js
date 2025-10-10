@@ -9,7 +9,7 @@ const colorSchema = new mongoose.Schema({
     match :  /^[a-zA-Z 0-9 ]+$/,
     validate: {
       validator: async function (name) {
-        const existingColor = await this.constructor.findOne({ name , deleted_at : null });
+        const existingColor = await this.constructor.findOne({ name , deletedAt : null });
         return !existingColor;
       } ,
       message: "Name already exists"

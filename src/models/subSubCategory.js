@@ -17,7 +17,7 @@ const subSubCategorySchema = new mongoose.Schema(
     },
     subCategory: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: "SubCategory",
+      ref: "SubCategories",
       required: [true, "Sub-category reference is required"],
     }],
     image: {

@@ -18,7 +18,7 @@ const subCategorySchema = new mongoose.Schema(
     category: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Category",
+        ref: "Categories",
         required: [true, "Category reference is required"],
       },
     ],
