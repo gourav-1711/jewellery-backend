@@ -15,11 +15,13 @@ const subCategorySchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    category: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
-      required: [true, "Category reference is required"],
-    }],
+    category: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: [true, "Category reference is required"],
+      },
+    ],
     image: {
       type: String,
       required: [true, "Image URL is required"],
@@ -42,7 +44,9 @@ const subCategorySchema = new mongoose.Schema(
       min: 0,
       max: 1000,
     },
+  
   },
+
   {
     timestamps: true,
   }
