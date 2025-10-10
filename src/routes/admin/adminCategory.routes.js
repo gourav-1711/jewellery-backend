@@ -17,7 +17,7 @@ const {
 // Category routes
 router.post("/view", Protect, uploadNone, view);
 router.post("/details/:id", Protect, details);
-router.post("/create", uploadSingle, create);
+router.post("/create", Protect, uploadSingle, create);
 router.put("/update/:id", Protect, uploadSingle, update);
 router.put("/delete/:id", Protect, uploadNone, destroy);
 router.put("/change-status/:id", Protect, uploadNone, changeStatus);

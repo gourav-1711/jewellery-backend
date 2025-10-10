@@ -37,7 +37,7 @@ const optimizeImage = async (buffer, options = {}) => {
       withoutEnlargement: true,
     })
     .toFormat("webp", {
-      quality: 85,
+      quality: 90,
       effort: 6,
     })
     .toBuffer();
