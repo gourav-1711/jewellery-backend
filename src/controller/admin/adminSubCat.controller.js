@@ -105,7 +105,7 @@ exports.view = async (request, response) => {
       .find(filter)
       .sort({ order: "asc", _id: "desc" })
       .limit(limitValue)
-      .populate("parent_category_ids")
+      .populate("category")
       .skip(skipValue);
 
     const output = {
@@ -115,7 +115,7 @@ exports.view = async (request, response) => {
       _total_pages: Math.ceil(totalRecords / limitValue),
       _total_records: totalRecords,
       _current_page: Number(pageValue),
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/subcategories/`,
+     
     };
 
     response.send(output);

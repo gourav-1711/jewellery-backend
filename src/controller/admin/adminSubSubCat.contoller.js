@@ -110,7 +110,7 @@ exports.view = async (request, response) => {
       .find(filter)
       .sort({ order: "asc", _id: "desc" })
       .limit(limitValue)
-      .populate("subCategory_ids")
+      .populate("subCategory")
       .skip(skipValue);
 
     const output = {
