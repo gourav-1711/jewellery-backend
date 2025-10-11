@@ -4,7 +4,7 @@ const Category = require("../../models/category");
 const SubCategory = require("../../models/subCategory");
 const SubSubCategory = require("../../models/subSubCategory");
 const { uploadToR2, deleteFromR2 } = require("../../lib/cloudflare");
-const {generateUniqueSlug} = require("../../lib/slugFunc");
+const { generateUniqueSlug } = require("../../lib/slugFunc");
 
 // Create Product
 exports.create = async (request, response) => {
@@ -12,29 +12,31 @@ exports.create = async (request, response) => {
     const data = new Product(request.body);
 
     // Upload main image to Cloudflare R2 if file exists
-    if (request.file) {
-      const uploadResult = await uploadToR2(request.file, "products");
-
-      if (uploadResult.success) {
-        data.image = uploadResult.url;
-      } else {
-        throw new Error("Failed to upload image");
-      }
-    }
-
-    // Upload multiple images if they exist
-    if (request.files && request.files.length > 0) {
-      const imageUrls = [];
-
-      for (const file of request.files) {
-        const uploadResult = await uploadToR2(file, "products");
-
+    if (request.files) {
+      // Handle main image
+      if (request.files.image && request.files.image[0]) {
+        const uploadResult = await uploadToR2(
+          request.files.image[0],
+          "products"
+        );
         if (uploadResult.success) {
-          imageUrls.push(uploadResult.url);
+          data.image = uploadResult.url;
+        } else {
+          throw new Error("Failed to upload main image");
         }
       }
 
-      data.images = imageUrls;
+      // Handle additional images
+      if (request.files.images && request.files.images.length > 0) {
+        const imageUrls = [];
+        for (const file of request.files.images) {
+          const uploadResult = await uploadToR2(file, "products");
+          if (uploadResult.success) {
+            imageUrls.push(uploadResult.url);
+          }
+        }
+        data.images = imageUrls;
+      }
     }
 
     // Generate slug
@@ -131,7 +133,7 @@ exports.view = async (request, response) => {
       inStock,
     } = request.query;
 
-    const query = {deletedAt: null};
+    const query = { deletedAt: null };
 
     // Filter by category
     if (category) {
