@@ -123,9 +123,9 @@ exports.view = async (request, response) => {
     const {
       page = 1,
       limit = 20,
-      category,
-      subCategory,
-      subSubCategory,
+      categories,
+      subCategories,
+      subSubCategories,
       minPrice,
       maxPrice,
       search,
@@ -136,18 +136,18 @@ exports.view = async (request, response) => {
     const query = { deletedAt: null };
 
     // Filter by category
-    if (category) {
-      query.category = Array.isArray(category) ? { $in: category } : category;
+    if (categories) {
+      query.categories = Array.isArray(categories) ? { $in: categories } : categories;
     }
-    if (subCategory) {
-      query.subCategory = Array.isArray(subCategory)
-        ? { $in: subCategory }
-        : subCategory;
+    if (subCategories) {
+      query.subCategories = Array.isArray(subCategories)
+        ? { $in: subCategories }
+        : subCategories;
     }
-    if (subSubCategory) {
-      query.subSubCategory = Array.isArray(subSubCategory)
-        ? { $in: subSubCategory }
-        : subSubCategory;
+    if (subSubCategories) {
+      query.subSubCategories = Array.isArray(subSubCategories)
+        ? { $in: subSubCategories }
+        : subSubCategories;
     }
     // Filter by price range
     if (minPrice || maxPrice) {
@@ -172,9 +172,9 @@ exports.view = async (request, response) => {
     const skip = (page - 1) * limit;
 
     const products = await Product.find(query)
-      .populate("category")
-      .populate("subCategory")
-      .populate("subSubCategory")
+      .populate("categories")
+      .populate("subCategories")
+      .populate("subSubCategories")
       .populate("colors")
       .populate("material")
       .sort(sort)
@@ -217,15 +217,15 @@ exports.getOne = async (request, response) => {
     // Check if id is a valid ObjectId
     if (mongoose.Types.ObjectId.isValid(id)) {
       product = await Product.findById(id)
-        .populate("category", "name slug")
-        .populate("subCategory", "name slug")
-        .populate("subSubCategory", "name slug");
+        .populate("categories", "name slug")
+        .populate("subCategories", "name slug")
+        .populate("subSubCategories", "name slug");
     } else {
       // Find by slug
       product = await Product.findOne({ slug: slug })
-        .populate("category", "name slug")
-        .populate("subCategory", "name slug")
-        .populate("subSubCategory", "name slug");
+        .populate("categories", "name slug")
+        .populate("subCategories", "name slug")
+        .populate("subSubCategories", "name slug");
     }
 
     if (!product) {
