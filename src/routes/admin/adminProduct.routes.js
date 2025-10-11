@@ -19,10 +19,10 @@ const {
   uploadProduct,
 } = require("../../middleware/uploadMiddleware");
 // Category routes
-router.post("/create", Protect, uploadSingle, uploadProduct, create);
+router.post("/create", Protect,  uploadProduct, create);
 router.post("/view", Protect, uploadNone, view);
 router.post("/details/:id", Protect, getOne);
-router.put("/update/:id", Protect, uploadSingle, uploadProduct, update);
+router.put("/update/:id", Protect,  uploadProduct, update);
 router.put("/delete/:id", Protect, uploadNone, destroy);
 router.put("/change-status/:id", Protect, uploadNone, changeStatus);
 router.put("/update-stock/:id", Protect, uploadNone, updateStock);
