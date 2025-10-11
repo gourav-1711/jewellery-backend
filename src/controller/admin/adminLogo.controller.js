@@ -23,7 +23,7 @@ exports.create = async (req, res) => {
       const uploadResult = await uploadToR2(req.file, "logos");
 
       if (uploadResult.success) {
-        data.image = uploadResult.url;
+        data.logo = uploadResult.url;
       } else {
         throw new Error("Failed to upload image");
       }
