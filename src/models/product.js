@@ -108,27 +108,27 @@ const productSchema = new mongoose.Schema(
     },
     isFeatured: {
       type: Boolean,
-      required: [true, "Please enter a isFeatured"],
+     default: false,
     },
     isNewArrival: {
       type: Boolean,
-      required: [true, "Please enter a isNewArrival"],
+     default: false,
     },
     isBestSeller: {
       type: Boolean,
-      required: [true, "Please enter a isBestSeller"],
+     default: false,
     },
     isTopRated: {
       type: Boolean,
-      required: [true, "Please enter a isTopRated"],
+     default: false,
     },
     isUpsell: {
       type: Boolean,
-      required: [true, "Please enter a isUpsell"],
+      default: false,
     },
     isOnSale: {
       type: Boolean,
-      required: [true, "Please enter a isOnSale"],
+      default: false,
     },
     order: {
       type: Number,
