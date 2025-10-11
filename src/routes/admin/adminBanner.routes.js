@@ -17,7 +17,7 @@ router.post("/create", protect, uploadSingle, createBanner);
 // delete banner
 router.delete("/delete/:id", protect, uploadSingle, deleteBanner);
 // get all banner
-router.post("/get-all", protect, uploadSingle, getAllBanner);
+router.post("/view", protect, uploadSingle, getAllBanner);
 // change status
 router.post("/change-status", protect, uploadSingle, changeStatus);
 module.exports = router;
