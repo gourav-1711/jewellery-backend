@@ -172,9 +172,11 @@ exports.view = async (request, response) => {
     const skip = (page - 1) * limit;
 
     const products = await Product.find(query)
-      .populate("category", "name slug")
-      .populate("subCategory", "name slug")
-      .populate("subSubCategory", "name slug")
+      .populate("category")
+      .populate("subCategory")
+      .populate("subSubCategory")
+      .populate("colors")
+      .populate("material")
       .sort(sort)
       .limit(Number(limit))
       .skip(skip);
