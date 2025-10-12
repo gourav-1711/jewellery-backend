@@ -106,21 +106,25 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       required: [true, "Please enter a status"],
     },
+    isPersonalized: {
+      type: Boolean,
+      default: false,
+    },
     isFeatured: {
       type: Boolean,
-     default: false,
+      default: false,
     },
     isNewArrival: {
       type: Boolean,
-     default: false,
+      default: false,
     },
     isBestSeller: {
       type: Boolean,
-     default: false,
+      default: false,
     },
     isTopRated: {
       type: Boolean,
-     default: false,
+      default: false,
     },
     isUpsell: {
       type: Boolean,
