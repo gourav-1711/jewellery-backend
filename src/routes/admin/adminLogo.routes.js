@@ -12,7 +12,7 @@ const { uploadLogo, uploadNone } = require("../../middleware/uploadMiddleware");
 
 router.post("/create", protect, uploadLogo, create);
 router.post("/view", protect, uploadNone, view);
-router.put("/destroy", protect, uploadNone, destroy);
+router.put("/destroy/:id", protect, uploadNone, destroy);
 router.put("/update/:id", protect, uploadLogo, update);
 router.post("/change-status", protect, uploadNone, changeStatus);
 
