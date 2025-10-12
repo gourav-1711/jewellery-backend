@@ -1,14 +1,10 @@
 const whyChooseUs = require("../../models/whyChooseUs");
-const SlugFunc = require("../../lib/slugFunc");
 const { uploadToR2 } = require("../../lib/cloudflare");
 
 // create
 exports.create = async (request, response) => {
   try {
     const data = new whyChooseUs(request.body);
-
-    const slug = await SlugFunc(whyChooseUs, data.name);
-    data.slug = slug;
 
     // Upload image to Cloudflare R2 if file exists
     if (request.file) {
@@ -61,7 +57,7 @@ exports.view = async (request, response) => {
     let limitValue = 10;
     let skipValue;
 
-    const andCondition = [{ deleted_at: null }];
+    const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
     let filter = {};
@@ -79,7 +75,7 @@ exports.view = async (request, response) => {
 
       if (request.body.title != undefined) {
         const title = new RegExp(request.body.title, "i");
-        orCondition.push({ title: title , description: title });
+        orCondition.push({ title: title, description: title });
       }
 
       if (request.body.status != undefined) {
@@ -106,7 +102,6 @@ exports.view = async (request, response) => {
       _total_pages: Math.ceil(totalRecords / limitValue),
       _total_records: totalRecords,
       _current_page: Number(pageValue),
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/categories/`,
     };
 
     response.send(output);
@@ -130,7 +125,7 @@ exports.destroy = async (request, response) => {
       },
       {
         $set: {
-          deleted_at: Date.now(),
+          deletedAt: Date.now(),
         },
       }
     );
@@ -164,7 +159,6 @@ exports.details = async (request, response) => {
       _status: result ? true : false,
       _message: result ? "Data Found" : "No Data Found",
       _data: result,
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/categories/`,
     };
 
     response.send(output);
@@ -187,7 +181,7 @@ exports.update = async (request, response) => {
 
     // Upload new image to Cloudflare R2 if file exists
     if (request.file) {
-      const uploadResult = await uploadToR2(request.file, "categories");
+      const uploadResult = await uploadToR2(request.file, "whyChooseUs");
 
       if (uploadResult.success) {
         data.image = uploadResult.url;
@@ -195,9 +189,6 @@ exports.update = async (request, response) => {
         throw new Error("Failed to upload image");
       }
     }
-
-    const slug = await SlugFunc(whyChooseUs, data.title);
-    data.slug = slug;
 
     const ress = await whyChooseUs.updateOne(
       {
@@ -261,4 +252,3 @@ exports.changeStatus = async (request, response) => {
     response.send(output);
   }
 };
-

@@ -1,14 +1,10 @@
 const testimonial = require("../../models/testimonial");
-const SlugFunc = require("../../lib/slugFunc");
 const { uploadToR2 } = require("../../lib/cloudflare");
 
 // create
 exports.create = async (request, response) => {
   try {
     const data = new testimonial(request.body);
-
-    const slug = await SlugFunc(testimonial, data.name);
-    data.slug = slug;
 
     // Upload image to Cloudflare R2 if file exists
     if (request.file) {
@@ -61,7 +57,7 @@ exports.view = async (request, response) => {
     let limitValue = 10;
     let skipValue;
 
-    const andCondition = [{ deleted_at: null }];
+    const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
     let filter = {};
@@ -130,7 +126,7 @@ exports.destroy = async (request, response) => {
       },
       {
         $set: {
-          deleted_at: Date.now(),
+          deletedAt: Date.now(),
         },
       }
     );
@@ -164,7 +160,7 @@ exports.details = async (request, response) => {
       _status: result ? true : false,
       _message: result ? "Data Found" : "No Data Found",
       _data: result,
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/categories/`,
+      
     };
 
     response.send(output);
@@ -187,7 +183,7 @@ exports.update = async (request, response) => {
 
     // Upload new image to Cloudflare R2 if file exists
     if (request.file) {
-      const uploadResult = await uploadToR2(request.file, "categories");
+      const uploadResult = await uploadToR2(request.file, "testimonials");
 
       if (uploadResult.success) {
         data.image = uploadResult.url;
@@ -195,9 +191,6 @@ exports.update = async (request, response) => {
         throw new Error("Failed to upload image");
       }
     }
-
-    const slug = await SlugFunc(testimonial, data.title);
-    data.slug = slug;
 
     const ress = await testimonial.updateOne(
       {
