@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const {
   createBanner,
-  //   updateBanner,
+    updateBanner,
   deleteBanner,
   getAllBanner,
   changeStatus,
@@ -13,7 +13,7 @@ const { uploadSingle } = require("../../middleware/uploadMiddleware");
 // create banner
 router.post("/create", protect, uploadSingle, createBanner);
 // update banner
-// router.put("/update/:id", protect, uploadSingle, updateBanner);
+router.put("/update/:id", protect, uploadSingle, updateBanner);
 // delete banner
 router.delete("/delete/:id", protect, uploadSingle, deleteBanner);
 // get all banner

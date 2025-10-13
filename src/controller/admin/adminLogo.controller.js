@@ -157,15 +157,15 @@ exports.destroy = async (req, res) => {
     }
 
     // Delete image from Cloudflare R2 if exists
-    if (logo.image) {
-      const fileName = getFileNameFromUrl(logo.image);
+    if (logo.logo) {
+      const fileName = getFileNameFromUrl(logo.logo);
       if (fileName) {
         try {
           await deleteFromR2(fileName);
         } catch (deleteError) {
           return res.status(500).json({
             _status: false,
-            _message: "Failed to delete old Logo",
+            _message:  "Failed to delete old Logo",
             _data: null,
           });
         }

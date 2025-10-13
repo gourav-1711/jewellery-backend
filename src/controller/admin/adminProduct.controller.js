@@ -121,8 +121,6 @@ exports.create = async (request, response) => {
 exports.view = async (request, response) => {
   try {
     const {
-      page = 1,
-      limit = 20,
       categories,
       subCategories,
       subSubCategories,
@@ -137,7 +135,9 @@ exports.view = async (request, response) => {
 
     // Filter by category
     if (categories) {
-      query.categories = Array.isArray(categories) ? { $in: categories } : categories;
+      query.categories = Array.isArray(categories)
+        ? { $in: categories }
+        : categories;
     }
     if (subCategories) {
       query.subCategories = Array.isArray(subCategories)
@@ -169,25 +169,14 @@ exports.view = async (request, response) => {
       ];
     }
 
-    const skip = (page - 1) * limit;
+    const products = await Product.find(query).sort(sort);
 
-    const products = await Product.find(query)
-      .sort(sort)
-      .limit(Number(limit))
-      .skip(skip);
-
-    const total = await Product.countDocuments(query);
+ 
 
     const output = {
       _status: true,
       _message: "Products fetched successfully",
       _data: products,
-      _pagination: {
-        total,
-        page: Number(page),
-        limit: Number(limit),
-        totalPages: Math.ceil(total / limit),
-      },
     };
 
     response.send(output);

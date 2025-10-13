@@ -91,7 +91,7 @@ module.exports.getAllBanner = async (req, res) => {
       _total_pages: Math.ceil(totalRecords / limitValue),
       _total_records: totalRecords,
       _current_page: Number(pageValue),
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/banners/`,
+      
     };
 
     res.status(200).json(output);
@@ -107,47 +107,46 @@ module.exports.getAllBanner = async (req, res) => {
 };
 
 
-// // update banner
-// module.exports.updateBanner = async (req, res) => {
-//   try {
-//     const data = { ...req.body };
+ // update banner
+module.exports.updateBanner = async (req, res) => {
+  try {
+    const data = { ...req.body };
 
-//     // Upload new image to Cloudflare R2 if file exists
-//     if (req.file) {
-//       const uploadResult = await uploadToR2(req.file, "banners");
+    // Upload new image to Cloudflare R2 if file exists
+    if (req.file) {
+      const uploadResult = await uploadToR2(req.file, "banners");
 
-//       if (uploadResult.success) {
-//         data.image = uploadResult.url;
-//       } else {
-//         throw new Error("Failed to upload image");
-//       }
-//     }
+      if (uploadResult.success) {
+        data.image = uploadResult.url;
+      } else {
+        throw new Error("Failed to upload image");
+      }
+    }
 
-//     data.updated_at = Date.now();
 
-//     const banner = await bannerModal.findByIdAndUpdate(
-//       req.params.id,
-//       { $set: data },
-//       { new: true }
-//     );
+    const banner = await bannerModal.findByIdAndUpdate(
+      req.params.id,
+      { $set: data },
+      { new: true }
+    );
 
-//     const output = {
-//       _status: banner ? true : false,
-//       _message: banner ? "Banner Updated Successfully" : "Banner Not Found",
-//       _data: banner,
-//     };
+    const output = {
+      _status: banner ? true : false,
+      _message: banner ? "Banner Updated Successfully" : "Banner Not Found",
+      _data: banner,
+    };
 
-//     res.status(200).json(output);
-//   } catch (error) {
-//     const output = {
-//       _status: false,
-//       _message: error.message || "Failed to update banner",
-//       _data: null,
-//     };
+    res.status(200).json(output);
+  } catch (error) {
+    const output = {
+      _status: false,
+      _message: error.message || "Failed to update banner",
+      _data: null,
+    };
 
-//     res.status(500).json(output);
-//   }
-// };
+    res.status(500).json(output);
+  }
+};
 
 // soft delete banner
 module.exports.deleteBanner = async (req, res) => {

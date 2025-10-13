@@ -40,9 +40,7 @@ exports.create = async (request, response) => {
 // view
 exports.view = async (request, response) => {
   try {
-    let pageValue = 1;
-    let limitValue = 10;
-    let skipValue;
+    
 
     const andCondition = [{ deletedAt: null }];
     const orCondition = [];
@@ -56,10 +54,6 @@ exports.view = async (request, response) => {
     }
 
     if (request.body != undefined) {
-      pageValue = request.body.page ? request.body.page : 1;
-      limitValue = request.body.limit ? request.body.limit : 10;
-      skipValue = (pageValue - 1) * limitValue;
-
       if (request.body.search != undefined) {
         const name = new RegExp(request.body.search, "i");
         orCondition.push({ question: name }, { answer: name });
@@ -76,16 +70,11 @@ exports.view = async (request, response) => {
       .find(filter)
       .select("_id question answer status order")
       .sort({ order: "asc", _id: "desc" })
-      .limit(limitValue)
-      .skip(skipValue);
 
     const output = {
       _status: ress.length > 0,
       _message: ress.length > 0 ? "Data Found" : "No Data Found",
       _data: ress.length > 0 ? ress : [],
-      _total_pages: Math.ceil(totalRecords / limitValue),
-      _total_records: totalRecords,
-      _current_page: Number(pageValue),
     };
 
     response.send(output);

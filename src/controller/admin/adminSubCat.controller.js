@@ -1,4 +1,4 @@
-const {generateUniqueSlug} = require("../../lib/slugFunc");
+const { generateUniqueSlug } = require("../../lib/slugFunc");
 const subCategory = require("../../models/subCategory");
 // Import the uploadToR2 function from lib folder
 const { uploadToR2 } = require("../../lib/cloudflare");
@@ -59,10 +59,6 @@ exports.create = async (request, response) => {
 // view
 exports.view = async (request, response) => {
   try {
-    let pageValue = 1;
-    let limitValue = 10;
-    let skipValue;
-
     const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
@@ -75,10 +71,6 @@ exports.view = async (request, response) => {
     }
 
     if (request.body != undefined) {
-      pageValue = request.body.page ? request.body.page : 1;
-      limitValue = request.body.limit ? request.body.limit : 10;
-      skipValue = (pageValue - 1) * limitValue;
-
       if (request.body.name != undefined) {
         const name = new RegExp(request.body.name, "i");
         orCondition.push({ name: name });
@@ -104,9 +96,7 @@ exports.view = async (request, response) => {
     const ress = await subCategory
       .find(filter)
       .sort({ order: "asc", _id: "desc" })
-      .limit(limitValue)
-      .populate("category")
-      .skip(skipValue);
+      .populate("category");
 
     const output = {
       _status: ress.length > 0,
@@ -115,7 +105,6 @@ exports.view = async (request, response) => {
       _total_pages: Math.ceil(totalRecords / limitValue),
       _total_records: totalRecords,
       _current_page: Number(pageValue),
-     
     };
 
     response.send(output);

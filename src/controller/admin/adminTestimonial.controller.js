@@ -53,9 +53,7 @@ exports.create = async (request, response) => {
 // view
 exports.view = async (request, response) => {
   try {
-    let pageValue = 1;
-    let limitValue = 10;
-    let skipValue;
+   
 
     const andCondition = [{ deletedAt: null }];
     const orCondition = [];
@@ -69,10 +67,6 @@ exports.view = async (request, response) => {
     }
 
     if (request.body != undefined) {
-      pageValue = request.body.page ? request.body.page : 1;
-      limitValue = request.body.limit ? request.body.limit : 10;
-      skipValue = (pageValue - 1) * limitValue;
-
       if (request.body.title != undefined) {
         const title = new RegExp(request.body.title, "i");
         orCondition.push({ title: title , description: title });
@@ -92,17 +86,12 @@ exports.view = async (request, response) => {
     const ress = await testimonial
       .find(filter)
       .sort({ order: "asc", _id: "desc" })
-      .limit(limitValue)
-      .skip(skipValue);
 
     const output = {
       _status: ress.length > 0,
       _message: ress.length > 0 ? "Data Found" : "No Data Found",
       _data: ress.length > 0 ? ress : [],
-      _total_pages: Math.ceil(totalRecords / limitValue),
-      _total_records: totalRecords,
-      _current_page: Number(pageValue),
-      _image_url: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.dev/${process.env.CLOUDFLARE_BUCKET_NAME}/testimonials/`,
+    
     };
 
     response.send(output);

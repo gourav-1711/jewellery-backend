@@ -39,9 +39,7 @@ exports.create = async (request, response) => {
 // view
 exports.view = async (request, response) => {
   try {
-    let pageValue = 1;
-    let limitValue = 10;
-    let skipValue;
+    
 
     const andCondition = [{ deletedAt: null }];
     const orCondition = [];
@@ -53,9 +51,7 @@ exports.view = async (request, response) => {
     }
 
     if (request.body != undefined) {
-      pageValue = request.body.page ? request.body.page : 1;
-      limitValue = request.body.limit ? request.body.limit : 10;
-      skipValue = (pageValue - 1) * limitValue;
+      
 
       if (request.body.name != undefined) {
         const name = new RegExp(request.body.name, "i");
@@ -67,21 +63,17 @@ exports.view = async (request, response) => {
       filter.$or = orCondition;
     }
 
-    const totalRecords = await material.find(filter).countDocuments();
+        
 
     const ress = await material
       .find(filter)
       .sort({ order: "asc", _id: "desc" })
-      .limit(limitValue)
-      .skip(skipValue);
+    
 
     return response.status(200).json({
       _status: ress.length > 0,
       _message: ress.length > 0 ? "Data Found" : "No Data Found",
       _data: ress.length > 0 ? ress : [],
-      _total_pages: Math.ceil(totalRecords / limitValue),
-      _total_records: ress.length,
-      _current_page: Number(pageValue),
     });
   } catch (err) {
     return response.status(500).json({

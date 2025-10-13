@@ -4,8 +4,8 @@ const Reviews = require("../../models/review");
 exports.getAllReviews = async (req, res) => {
   try {
     const reviews = await Reviews.find()
-      .populate("user", "name email") // optional if you have user reference
-      .populate("product", "name slug") // optional if linked to product
+      .populate("userId") // optional if you have user reference
+      .populate("productId") // optional if linked to product
       .sort("-createdAt");
 
     res.status(200).json({
@@ -28,8 +28,8 @@ exports.getReviewById = async (req, res) => {
     const { id } = req.params;
 
     const review = await Reviews.findById(id)
-      .populate("user", "name email")
-      .populate("product", "name slug");
+      .populate("userId")
+      .populate("productId");
 
     if (!review) {
       return res.status(404).json({
@@ -53,7 +53,7 @@ exports.getReviewById = async (req, res) => {
   }
 };
 
-// 🟢 Update review (e.g., mark verified, reply, etc.)
+// 🟢 Update review 
 exports.updateReview = async (req, res) => {
   try {
     const { id } = req.params;

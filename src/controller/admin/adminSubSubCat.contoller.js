@@ -1,6 +1,6 @@
-const {generateUniqueSlug} = require("../../lib/slugFunc");
+const { generateUniqueSlug } = require("../../lib/slugFunc");
 const subSubCategory = require("../../models/subSubCategory");
-const { uploadToR2 } = require('../../lib/cloudflare');
+const { uploadToR2 } = require("../../lib/cloudflare");
 require("dotenv").config();
 
 // create
@@ -11,7 +11,7 @@ exports.create = async (request, response) => {
     // Upload image to Cloudflare R2 if file exists
     if (request.file) {
       const uploadResult = await uploadToR2(request.file, "subsubcategories");
-      
+
       if (uploadResult.success) {
         data.image = uploadResult.url;
       } else {
@@ -58,10 +58,6 @@ exports.create = async (request, response) => {
 // view
 exports.view = async (request, response) => {
   try {
-    let pageValue = 1;
-    let limitValue = 10;
-    let skipValue;
-
     const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
@@ -74,10 +70,6 @@ exports.view = async (request, response) => {
     }
 
     if (request.body != undefined) {
-      pageValue = request.body.page ? request.body.page : 1;
-      limitValue = request.body.limit ? request.body.limit : 10;
-      skipValue = (pageValue - 1) * limitValue;
-
       if (request.body.name != undefined) {
         const name = new RegExp(request.body.name, "i");
         orCondition.push({ name: name });
@@ -109,18 +101,12 @@ exports.view = async (request, response) => {
     const ress = await subSubCategory
       .find(filter)
       .sort({ order: "asc", _id: "desc" })
-      .limit(limitValue)
-      .populate("subCategory")
-      .skip(skipValue);
+      .populate("subCategory");
 
     const output = {
       _status: ress.length > 0,
       _message: ress.length > 0 ? "Data Found" : "No Data Found",
       _data: ress.length > 0 ? ress : [],
-      _total_pages: Math.ceil(totalRecords / limitValue),
-      _total_records: totalRecords,
-      _current_page: Number(pageValue),
-     
     };
 
     response.send(output);
@@ -178,7 +164,6 @@ exports.details = async (request, response) => {
       _status: result ? true : false,
       _message: result ? "Data Found" : "No Data Found",
       _data: result,
-    
     };
 
     response.send(output);
@@ -202,7 +187,7 @@ exports.update = async (request, response) => {
     // Upload new image to Cloudflare R2 if file exists
     if (request.file) {
       const uploadResult = await uploadToR2(request.file, "subsubcategories");
-      
+
       if (uploadResult.success) {
         data.image = uploadResult.url;
       } else {
