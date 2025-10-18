@@ -3,7 +3,7 @@ const faqs = require("../../models/faq");
 // create
 exports.create = async (request, response) => {
   try {
-    const data = new faqs(request.body);
+    const data = new faqs({...request.body});
     const ress = await data.save();
 
     const output = {

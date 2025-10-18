@@ -28,6 +28,8 @@ const logoRoutes = require("./src/routes/web/logo.routes");
 const bannerRoutes = require("./src/routes/web/banner.routes");
 const reviewRoutes = require("./src/routes/web/review.routes");
 const whyChooseUsRoutes = require("./src/routes/web/whyChooseUs.routes");
+const webColorRoutes = require("./src/routes/web/color.routes");
+const webMaterialRoutes = require("./src/routes/web/material.routes");
 // admin routes variables
 const materialRoutes = require("./src/routes/admin/material.routes");
 const colorRoutes = require("./src/routes/admin/color.routes");
@@ -54,6 +56,8 @@ app.use("/api/website/faq", faqRoutes);
 app.use("/api/website/testimonial", testimonialRoutes);
 app.use("/api/website/whyChooseUs", whyChooseUsRoutes);
 app.use("/api/website/review", reviewRoutes);
+app.use("/api/website/color", webColorRoutes);
+app.use("/api/website/material", webMaterialRoutes);
 // admin routes
 app.use("/api/admin/logo", adminLogoRoutes);
 app.use("/api/admin/banner", adminBannerRoutes);

@@ -136,6 +136,45 @@ module.exports.getProfile = async (req, res) => {
   }
 };
 
+module.exports.changePassword = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({
+      _status: false,
+      _message: "Unauthorized",
+    });
+  }
+  try {
+    const user = await userModel.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({
+        _status: false,
+        _message: "User not found",
+      });
+    }
+    const isMatch = await comparePassword(req.body.oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        _status: false,
+        _message: "Incorrect password",
+      });
+    }
+    const hashedPassword = await hashPassword(req.body.newPassword);
+    user.password = hashedPassword;
+    await user.save();
+    return res.status(200).json({
+      _status: true,
+      _message: "Password changed successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      _status: false,
+      _message: "Internal Server Error",
+      ...(process.env.NODE_ENV === "development" && { _error: error.message }),
+    });
+  }
+};
+
 module.exports.updateProfile = async (req, res) => {
   if (!req.user) {
     return res.status(401).json({
@@ -217,7 +256,7 @@ module.exports.forgotPassword = async (req, res) => {
       return res.status(200).json({
         _status: true,
         _message:
-          "If your email exists in our system, you will receive a password reset OTP",
+          " We have sent you an OTP to your email. Please check your email to reset your password.",
       });
     }
 
@@ -271,7 +310,7 @@ module.exports.verifyOtp = async (req, res) => {
     if (!decoded || decoded.type !== "password_reset") {
       return res.status(400).json({
         _status: false,
-        _message: "Invalid or expired token",
+        _message: "Invalid or expired attempt",
       });
     }
 
@@ -310,16 +349,7 @@ module.exports.resetPassword = async (req, res) => {
   }
 
   try {
-    const { token, newPassword } = req.body;
-
-    // Verify the token
-    const decoded = verifyPasswordResetToken(token);
-    if (!decoded || decoded.type !== "password_reset") {
-      return res.status(400).json({
-        _status: false,
-        _message: "Invalid or expired token",
-      });
-    }
+    const { newPassword } = req.body;
 
     // Find user by email
     const user = await userModel.findOne({ email: decoded.email });
@@ -361,6 +391,12 @@ module.exports.verifyUser = async (req, res) => {
 
   try {
     const user = req.user;
+    if (user.isEmailVerified) {
+      return res.status(200).json({
+        _status: false,
+        _message: "User already verified",
+      });
+    }
     const email = user.email;
 
     // Generate OTP
@@ -473,4 +509,3 @@ module.exports.completeVerify = async (req, res) => {
     });
   }
 };
-

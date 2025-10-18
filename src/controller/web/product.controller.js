@@ -13,7 +13,11 @@ exports.getOne = async (request, response) => {
     // Check if id is a valid ObjectId
 
     // Find by slug
-    product = await Product.findOne({ slug: slug })
+    product = await Product.findOne({
+      slug: slug,
+      status: true,
+      deletedAt: null,
+    })
       .populate("category", "name slug")
       .populate("subCategory", "name slug")
       .populate("subSubCategory", "name slug");

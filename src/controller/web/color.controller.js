@@ -1,16 +1,16 @@
-const banner = require("../../models/banner");
+const color = require("../../models/color");
 
-exports.bannerController = async (req, res) => {
+exports.colorController = async (req, res) => {
   try {
-    const bannerData = await banner.find({
+    const colorData = await color.find({
       status: true,
       deletedAt: null,
     });
-    console.log(bannerData);
+    console.log(colorData);
     res.status(200).json({
       _status: true,
-      _message: "Banner Data",
-      _data: bannerData,
+      _message: "Color Data",
+      _data: colorData,
     });
   } catch (error) {
     res.status(500).json({

@@ -6,8 +6,12 @@ exports.create = async (request, response) => {
   try {
     const data = new whyChooseUs(request.body);
 
-    // Upload image to Cloudflare R2 if file exists
-    if (request.file) {
+    // Check if a JSX icon is provided instead of a file
+    // Expecting the frontend to send something like: { icon: "<svg>...</svg>" } or a string key for the icon
+    if (request.body.icon) {
+      data.image = request.body.icon; // store the JSX/string/icon name
+    } else if (request.file) {
+      // fallback to real image upload if file exists
       const uploadResult = await uploadToR2(request.file, "whyChooseUs");
 
       if (uploadResult.success) {
@@ -19,13 +23,11 @@ exports.create = async (request, response) => {
 
     const ress = await data.save();
 
-    const output = {
+    response.send({
       _status: true,
       _message: "Data Inserted",
       _data: ress,
-    };
-
-    response.send(output);
+    });
   } catch (err) {
     const messages = [];
 
@@ -40,15 +42,14 @@ exports.create = async (request, response) => {
       messages.push(err.message || "Something went wrong");
     }
 
-    const output = {
+    response.send({
       _status: false,
       _message: messages,
       _data: [],
-    };
-
-    response.send(output);
+    });
   }
 };
+
 
 // view
 exports.view = async (request, response) => {
@@ -168,8 +169,11 @@ exports.update = async (request, response) => {
     const id = request.params.id;
     const data = { ...request.body };
 
-    // Upload new image to Cloudflare R2 if file exists
-    if (request.file) {
+    // Check for JSX icon in request body
+    if (request.body.icon) {
+      data.image = request.body.icon; // save JSX/icon string
+    } else if (request.file) {
+      // fallback to real image upload
       const uploadResult = await uploadToR2(request.file, "whyChooseUs");
 
       if (uploadResult.success) {
@@ -180,31 +184,24 @@ exports.update = async (request, response) => {
     }
 
     const ress = await whyChooseUs.updateOne(
-      {
-        _id: id,
-      },
-      {
-        $set: data,
-      }
+      { _id: id },
+      { $set: data }
     );
 
-    const output = {
+    response.send({
       _status: true,
       _message: "Data Updated",
       _data: ress,
-    };
-
-    response.send(output);
+    });
   } catch (err) {
-    const output = {
+    response.send({
       _status: false,
-      _message: "No Data Updated",
-      _data: err.message || null,
-    };
-
-    response.send(output);
+      _message: err.message || "No Data Updated",
+      _data: null,
+    });
   }
 };
+
 
 // change status
 exports.changeStatus = async (request, response) => {

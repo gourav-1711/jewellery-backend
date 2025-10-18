@@ -7,6 +7,6 @@ const {
 const protect = require("../../middleware/authMiddleware");
 const { uploadNone } = require("../../middleware/uploadMiddleware");
 router.post("/login" ,uploadNone,login);
-router.get("/findAllUser", protect ,uploadNone,findAllUser);
+router.post("/findAllUser" ,uploadNone,findAllUser);
 
 module.exports = router;

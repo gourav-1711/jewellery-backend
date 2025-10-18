@@ -20,7 +20,7 @@ module.exports = {
   }) ,
   passwordReset: rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5,
+    max: 25,
     message: "Too many tries to Reset Password, please try again later"
   })
 };

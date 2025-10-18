@@ -15,9 +15,29 @@ const userSchema = new mongoose.Schema(
       enum: ["male", "female", "other"],
     },
     address: {
-      type: String,
-      default: "",
+      type: {
+        pincode: {
+          type: Number,
+        },
+        state: {
+          type: String,
+        },
+        city: {
+          type: String,
+        },
+        street: {
+          type: String,
+        },
+        area: {
+          type: String,
+        },
+        instructions: {
+          type: String,
+        },
+      },
+      default: {},
     },
+
     role: {
       type: String,
       default: "user",
@@ -55,6 +75,10 @@ const userSchema = new mongoose.Schema(
     mobile: {
       type: Number,
       default: "",
+    },
+    isMobileVerified: {
+      type: Boolean,
+      default: false,
     },
     status: {
       type: Boolean,

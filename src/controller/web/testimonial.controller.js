@@ -2,7 +2,10 @@ const testimonial = require("../../models/testimonial");
 
 exports.testimonialController = async (req, res) => {
   try {
-    const testimonialData = await testimonial.find();
+    const testimonialData = await testimonial.find({
+      status: true,
+      deletedAt: null,
+    });
     res.status(200).json({
       _status: true,
       _message: "Testimonial Data",

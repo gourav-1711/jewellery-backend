@@ -10,6 +10,7 @@ const {
   verifyOtp,
   verifyUser,
   completeVerify,
+  changePassword,
 } = require("../../controller/web/user.controller");
 const protect = require("../../middleware/authMiddleware");
 const rateLimit = require("../../middleware/rateLimit");
@@ -28,6 +29,14 @@ router.post(
   protect,
   uploadAvatar,
   updateProfile
+);
+
+router.post(
+  "/change-password",
+  rateLimit.passwordReset,
+  protect,
+  uploadNone,
+  changePassword
 );
 
 router.post(

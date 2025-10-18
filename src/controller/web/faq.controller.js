@@ -2,7 +2,10 @@ const faq = require("../../models/faq");
 
 exports.faqController = async (req, res) => {
   try {
-    const faqData = await faq.find();
+    const faqData = await faq.find({
+      status: true,
+      deletedAt: null,
+    });
     res.status(200).json({
       _status: true,
       _message: "Faq Data",

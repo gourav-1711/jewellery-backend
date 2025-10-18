@@ -44,7 +44,7 @@ module.exports.login = async (req, res) => {
 
 module.exports.findAllUser = async (req, res) => {
   try {
-    const users = await userModel.find();
+    const users = await userModel.find({});
     return res.status(200).json({
       _status: true,
       _message: "Users found successfully",
