@@ -6,7 +6,6 @@ exports.colorController = async (req, res) => {
       status: true,
       deletedAt: null,
     });
-    console.log(colorData);
     res.status(200).json({
       _status: true,
       _message: "Color Data",

@@ -6,7 +6,6 @@ exports.materialController = async (req, res) => {
       status: true,
       deletedAt: null,
     });
-    console.log(materialData);
     res.status(200).json({
       _status: true,
       _message: "Material Data",

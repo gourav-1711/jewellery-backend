@@ -18,6 +18,8 @@ exports.getOne = async (request, response) => {
       status: true,
       deletedAt: null,
     })
+      .populate("colors", "name code")
+      .populate("material", "name ")
       .populate("category", "name slug")
       .populate("subCategory", "name slug")
       .populate("subSubCategory", "name slug");
@@ -34,6 +36,7 @@ exports.getOne = async (request, response) => {
 
     response.send(output);
   } catch (err) {
+    console.log(err);
     const output = {
       _status: false,
       _message: err.message || "Something went wrong",
@@ -72,7 +75,7 @@ exports.getByCategory = async (req, res) => {
     if (filters.length === 0) {
       return res.send({
         _status: false,
-        _message: "No valid category found for given slugs",
+        _message: "No Products Found",
         _data: [],
       });
     }
@@ -81,11 +84,11 @@ exports.getByCategory = async (req, res) => {
     const products = await Product.find({
       $or: filters,
       deletedAt: null, // exclude soft-deleted
-      status: "Active",
+      status: true,
     })
-      .populate("category", "name slug")
-      .populate("subCategory", "name slug")
-      .populate("subSubCategory", "name slug")
+      .populate("category")
+      .populate("subCategory")
+      .populate("subSubCategory")
       .sort(sort)
       .limit(Number(limit))
       .skip(skip);
@@ -93,7 +96,7 @@ exports.getByCategory = async (req, res) => {
     const total = await Product.countDocuments({
       $or: filters,
       deletedAt: null,
-      status: "Active",
+      status: true,
     });
 
     res.send({
@@ -115,11 +118,9 @@ exports.getByCategory = async (req, res) => {
     });
   }
 };
-
 exports.getProductByFilter = async (req, res) => {
   try {
     const {
-      limit = 10,
       isFeatured,
       isNewArrival,
       isBestSeller,
@@ -129,11 +130,11 @@ exports.getProductByFilter = async (req, res) => {
       categorySlug,
       subCategorySlug,
       subSubCategorySlug,
-    } = req.body;
+    } = req.body || {}; // ✅ default to empty object
 
     const query = {
       deletedAt: null,
-      status: "Active",
+      status: true,
     };
 
     // ✅ Boolean filters
@@ -144,7 +145,7 @@ exports.getProductByFilter = async (req, res) => {
     if (isUpsell !== undefined) query.isUpsell = isUpsell;
     if (isOnSale !== undefined) query.isOnSale = isOnSale;
 
-    // ✅ Slug filters → get matching ObjectIds
+    // ✅ Slug filters
     if (categorySlug) {
       const categories = await Category.find({
         slug: Array.isArray(categorySlug)
@@ -183,12 +184,40 @@ exports.getProductByFilter = async (req, res) => {
       .populate("category", "name slug")
       .populate("subCategory", "name slug")
       .populate("subSubCategory", "name slug")
-      .limit(Number(limit))
+      .limit(30)
       .sort("-createdAt");
 
     res.send({
       _status: true,
       _message: "Filtered products fetched successfully",
+      _data: products,
+    });
+  } catch (err) {
+    console.log(err);
+    res.send({
+      _status: false,
+      _message: err.message || "Something went wrong",
+      _data: [],
+    });
+  }
+};
+
+exports.getBySearch = async (req, res) => {
+  try {
+    const { search } = req.body;
+    const products = await Product.find({
+      name: { $regex: search, $options: "i" },
+      slug: { $regex: search, $options: "i" },
+      deletedAt: null,
+      status: true,
+    })
+      .populate("category", "name slug")
+      .populate("subCategory", "name slug")
+      .populate("subSubCategory", "name slug")
+      .sort("-createdAt");
+    res.send({
+      _status: true,
+      _message: "Products fetched successfully",
       _data: products,
     });
   } catch (err) {

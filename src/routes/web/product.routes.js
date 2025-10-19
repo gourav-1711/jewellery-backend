@@ -5,17 +5,17 @@ const {
   getOne,
   getByCategory,
   getProductByFilter,
+  getBySearch,
 } = require("../../controller/web/product.controller");
-const Protect = require("../../middleware/authMiddleware");
 const { uploadNone } = require("../../middleware/uploadMiddleware");
 // Category routes
-router.post("/details/:slug", Protect, getOne);
+router.post("/details/:slug", uploadNone, getOne);
 router.post(
   "/get-by-category/:categorySlug/:subCategorySlug/:subSubCategorySlug",
-  Protect,
   uploadNone,
   getByCategory
 );
-router.post("/get-by-filter", Protect, uploadNone, getProductByFilter);
+router.post("/get-by-filter", uploadNone, getProductByFilter);
+router.post("/get-by-search", uploadNone, getBySearch);
 
 module.exports = router;
