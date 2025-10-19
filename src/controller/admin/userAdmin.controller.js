@@ -3,7 +3,7 @@ const { generateToken } = require("../../lib/jwt");
 const userModel = require("../../models/user");
 
 // admin panel login
-module.exports.login = async (req, res) => {
+exports.login = async (req, res) => {
   if (!req.body) {
     return res
       .status(400)
@@ -17,7 +17,7 @@ module.exports.login = async (req, res) => {
         _message: "All fields are required",
       });
     }
-    const user = await userModel.findOne({ email , role : "admin" });
+    const user = await userModel.findOne({ email, role: "admin" });
     if (!user) {
       return res.status(404).json({
         _status: false,
@@ -42,13 +42,40 @@ module.exports.login = async (req, res) => {
   }
 };
 
-module.exports.findAllUser = async (req, res) => {
+exports.findAllUser = async (req, res) => {
   try {
     const users = await userModel.find({});
     return res.status(200).json({
       _status: true,
       _message: "Users found successfully",
       _users: users,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      _status: false,
+      _message: "Internal Server Error",
+      ...(process.env.NODE_ENV === "development" && {
+        _error: error.message,
+      }),
+    });
+  }
+};
+exports.getFullDetails = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.params.id);
+    const cart = await cartModel.find({ user: req.params.id });
+    const orders = await orderModel.find({ user: req.params.id });
+    const wishlist = await wishlistModel.find({ user: req.params.id });
+    const reviews = await reviewModel.find({ user: req.params.id });
+    return res.status(200).json({
+      _status: true,
+      _message: "User found successfully",
+      _user: user,
+      _cart: cart,
+      _orders: orders,
+      _wishlist: wishlist,
+      _reviews: reviews,
     });
   } catch (error) {
     console.log(error);
