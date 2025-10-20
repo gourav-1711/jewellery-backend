@@ -11,8 +11,6 @@ const {
   verifyUser,
   completeVerify,
   changePassword,
-  verifyPhone,
-  completePhone,
 } = require("../../controller/web/user.controller");
 const protect = require("../../middleware/authMiddleware");
 const rateLimit = require("../../middleware/rateLimit");
@@ -62,9 +60,5 @@ router.post(
 router.post("/verify-user", protect, uploadNone, verifyUser);
 
 router.post("/complete-verify", protect, uploadNone, completeVerify);
-
-router.post("/mobile/send-otp", protect, uploadNone, verifyPhone);
-
-router.post("/mobile/complete-phone", protect, uploadNone, completePhone);
 
 module.exports = router;

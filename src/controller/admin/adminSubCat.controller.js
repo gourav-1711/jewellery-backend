@@ -59,6 +59,7 @@ exports.create = async (request, response) => {
 // view
 exports.view = async (request, response) => {
   try {
+  
     const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
@@ -102,9 +103,7 @@ exports.view = async (request, response) => {
       _status: ress.length > 0,
       _message: ress.length > 0 ? "Data Found" : "No Data Found",
       _data: ress.length > 0 ? ress : [],
-      _total_pages: Math.ceil(totalRecords / limitValue),
-      _total_records: totalRecords,
-      _current_page: Number(pageValue),
+     
     };
 
     response.send(output);
