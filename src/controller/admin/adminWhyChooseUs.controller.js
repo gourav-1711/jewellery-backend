@@ -9,6 +9,7 @@ exports.create = async (request, response) => {
     // Check if a JSX icon is provided instead of a file
     // Expecting the frontend to send something like: { icon: "<svg>...</svg>" } or a string key for the icon
     if (request.body.icon) {
+      console.log(request.body.icon);
       data.image = request.body.icon; // store the JSX/string/icon name
     } else if (request.file) {
       // fallback to real image upload if file exists

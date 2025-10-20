@@ -184,6 +184,8 @@ exports.getProductByFilter = async (req, res) => {
       .populate("category", "name slug")
       .populate("subCategory", "name slug")
       .populate("subSubCategory", "name slug")
+      .populate("colors", "name code")
+      .populate("material", "name ")
       .limit(30)
       .sort("-createdAt");
 

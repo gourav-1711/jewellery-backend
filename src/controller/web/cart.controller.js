@@ -148,7 +148,7 @@ module.exports.addToCart = async (req, res) => {
 
     res.status(200).json({
       _status: true,
-      _message: "Product added to cart successfully",
+      _message: existingItemIndex > -1 ? "Quantity Increased in cart" : "Product added to cart",
       _data: {
         cartId: cart._id,
         totalItems: cart.items.reduce((sum, item) => sum + item.quantity, 0),

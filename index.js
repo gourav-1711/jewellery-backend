@@ -7,7 +7,13 @@ require("dotenv").config();
 const app = express();
 
 // parse requests of content-type - application/json
-app.use(express.json());
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/orders/webhook") {
+    next(); // Skip JSON parsing for webhook
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // npm install express body-parser
 app.use(bodyParser.json());
@@ -30,6 +36,7 @@ const reviewRoutes = require("./src/routes/web/review.routes");
 const whyChooseUsRoutes = require("./src/routes/web/whyChooseUs.routes");
 const webColorRoutes = require("./src/routes/web/color.routes");
 const webMaterialRoutes = require("./src/routes/web/material.routes");
+const orderRoutes = require("./src/routes/web/order.routes");
 // admin routes variables
 const materialRoutes = require("./src/routes/admin/material.routes");
 const colorRoutes = require("./src/routes/admin/color.routes");
@@ -58,6 +65,7 @@ app.use("/api/website/whyChooseUs", whyChooseUsRoutes);
 app.use("/api/website/review", reviewRoutes);
 app.use("/api/website/color", webColorRoutes);
 app.use("/api/website/material", webMaterialRoutes);
+app.use("/api/website/orders", orderRoutes);
 // admin routes
 app.use("/api/admin/logo", adminLogoRoutes);
 app.use("/api/admin/banner", adminBannerRoutes);

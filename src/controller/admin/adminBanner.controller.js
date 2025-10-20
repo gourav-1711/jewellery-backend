@@ -46,7 +46,7 @@ module.exports.getAllBanner = async (req, res) => {
     let limitValue = 10;
     let skipValue;
 
-    const andCondition = [{ deleted_at: null }];
+    const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
     let filter = {};
@@ -155,7 +155,7 @@ module.exports.deleteBanner = async (req, res) => {
       req.params.id,
       {
         $set: {
-          deleted_at: Date.now(),
+          deletedAt: Date.now(),
         },
       },
       { new: true }

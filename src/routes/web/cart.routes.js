@@ -14,10 +14,10 @@ router.post("/view", protect, getCart);
 
 router.post("/add", protect, uploadNone, addToCart);
 
-router.put("/items/:itemId", protect, uploadNone, updateCartItem);
+router.put("/items/update/:itemId", protect, uploadNone, updateCartItem);
 
-router.put("/items/:itemId", protect, removeFromCart);
+router.put("/items/remove/:itemId", protect, removeFromCart);
 
-router.put("/", protect, clearCart);
+router.put("/destroy", protect, clearCart);
 
 module.exports = router;
