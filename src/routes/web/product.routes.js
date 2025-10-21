@@ -6,6 +6,7 @@ const {
   getByCategory,
   getProductByFilter,
   getBySearch,
+  getAll,
 } = require("../../controller/web/product.controller");
 const { uploadNone } = require("../../middleware/uploadMiddleware");
 // Category routes
@@ -17,5 +18,8 @@ router.post(
 );
 router.post("/get-by-filter", uploadNone, getProductByFilter);
 router.post("/get-by-search", uploadNone, getBySearch);
+
+// sitemap products
+router.post("/all", uploadNone, getAll)
 
 module.exports = router;

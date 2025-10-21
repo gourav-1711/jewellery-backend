@@ -230,3 +230,28 @@ exports.getBySearch = async (req, res) => {
     });
   }
 };
+
+// for sitemap only
+exports.getAll = async (req, res) => {
+  try {
+    const products = await Product.find({
+      deletedAt: null,
+      status: true,
+    })
+      .populate("category", "name slug")
+      .populate("subCategory", "name slug")
+      .populate("subSubCategory", "name slug")
+      .sort("-createdAt");
+    res.send({
+      _status: true,
+      _message: "Products fetched successfully",
+      _data: products,
+    });
+  } catch (err) {
+    res.send({
+      _status: false,
+      _message: err.message || "Something went wrong",
+      _data: [],
+    });
+  }
+};
