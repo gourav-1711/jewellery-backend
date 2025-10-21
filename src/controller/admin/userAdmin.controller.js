@@ -1,6 +1,10 @@
 // admin panel login and user management
 const { generateToken } = require("../../lib/jwt");
 const userModel = require("../../models/user");
+const cartModel = require("../../models/cart");
+const order = require("../../models/order");
+const wishlistModel = require("../../models/wishlist");
+const reviewModel = require("../../models/review");
 
 // admin panel login
 exports.login = async (req, res) => {
@@ -48,7 +52,7 @@ exports.findAllUser = async (req, res) => {
     return res.status(200).json({
       _status: true,
       _message: "Users found successfully",
-      _users: users,
+      _data: users,
     });
   } catch (error) {
     console.log(error);
@@ -65,7 +69,7 @@ exports.getFullDetails = async (req, res) => {
   try {
     const user = await userModel.findById(req.params.id);
     const cart = await cartModel.find({ user: req.params.id });
-    const orders = await orderModel.find({ user: req.params.id });
+    const orders = await order.find({ user: req.params.id });
     const wishlist = await wishlistModel.find({ user: req.params.id });
     const reviews = await reviewModel.find({ user: req.params.id });
     return res.status(200).json({

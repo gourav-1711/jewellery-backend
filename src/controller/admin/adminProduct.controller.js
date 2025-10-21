@@ -171,8 +171,6 @@ exports.view = async (request, response) => {
 
     const products = await Product.find(query).sort(sort);
 
- 
-
     const output = {
       _status: true,
       _message: "Products fetched successfully",
@@ -201,15 +199,19 @@ exports.getOne = async (request, response) => {
     // Check if id is a valid ObjectId
     if (mongoose.Types.ObjectId.isValid(id)) {
       product = await Product.findById(id)
-        .populate("categories", "name slug")
-        .populate("subCategories", "name slug")
-        .populate("subSubCategories", "name slug");
+        .populate("colors", "name code")
+        .populate("material", "name ")
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
+        .populate("subSubCategory", "name slug");
     } else {
       // Find by slug
       product = await Product.findOne({ slug: slug })
-        .populate("categories", "name slug")
-        .populate("subCategories", "name slug")
-        .populate("subSubCategories", "name slug");
+        .populate("colors", "name code")
+        .populate("material", "name ")
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
+        .populate("subSubCategory", "name slug");
     }
 
     if (!product) {
@@ -368,13 +370,7 @@ exports.update = async (request, response) => {
       }
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    })
-      .populate("category", "name slug")
-      .populate("subCategory", "name slug")
-      .populate("subSubCategory", "name slug");
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {});
 
     const output = {
       _status: true,
@@ -496,6 +492,8 @@ exports.getByCategory = async (request, response) => {
         { subSubCategory: { $in: subSubCategoryIds } },
       ],
     })
+      .populate("colors", "name code")
+      .populate("material", "name ")
       .populate("category", "name slug")
       .populate("subCategory", "name slug")
       .populate("subSubCategory", "name slug")

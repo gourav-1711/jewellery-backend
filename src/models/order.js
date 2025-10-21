@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const orderSchema = new mongoose.Schema(
   {
@@ -339,6 +339,6 @@ orderSchema.statics.getOrdersByStatus = function(status, userId = null) {
   return this.find(query).sort({ createdAt: -1 });
 };
 
-const Order = mongoose.model('Order', orderSchema);
+const OrderModel = mongoose.model("orders", orderSchema);
 
-export default Order;
+module.exports = OrderModel;

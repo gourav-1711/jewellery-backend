@@ -349,13 +349,14 @@ module.exports.resetPassword = async (req, res) => {
       _message: "Token and new password are required",
     });
   }
+  const user = req.user;
 
   try {
     const { newPassword } = req.body;
 
     // Find user by email
-    const user = await userModel.findOne({ email: decoded.email });
-    if (!user) {
+    const userData = await userModel.findOne({ email: user.email });
+    if (!userData) {
       return res.status(404).json({
         _status: false,
         _message: "User not found",
@@ -367,7 +368,7 @@ module.exports.resetPassword = async (req, res) => {
 
     // Update user's password
     user.password = hashedPassword;
-    await user.save();
+    await userData.save();
 
     return res.status(200).json({
       _status: true,
