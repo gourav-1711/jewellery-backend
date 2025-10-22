@@ -187,13 +187,14 @@ module.exports.updateProfile = async (req, res) => {
   try {
     const user = await userModel.findById(req.user._id);
 
+
     if (!user) {
       return res.status(404).json({
         _status: false,
         _message: "User not found",
       });
     }
-
+    
     let avatarUrl = user.avatar;
     if (req.file) {
       try {

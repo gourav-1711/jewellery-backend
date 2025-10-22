@@ -23,7 +23,7 @@ router.post("/register", rateLimit.register, uploadNone, registerUser);
 router.post("/login", rateLimit.login, uploadNone, loginUser);
 router.post("/profile", protect, uploadNone, getProfile);
 
-router.post(
+router.put(
   "/update-profile",
   rateLimit.updateProfile,
   protect,
