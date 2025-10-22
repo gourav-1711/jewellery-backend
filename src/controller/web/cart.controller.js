@@ -24,7 +24,7 @@ module.exports.getCart = async (req, res) => {
     const items = await Promise.all(
       cart.items.map(async (item) => {
         const product = await Product.findById(item.product).select(
-          "name price discount_price images"
+          "name price discount_price images slug stock"
         );
         const itemTotal =
           product.discount_price > 0
@@ -42,6 +42,8 @@ module.exports.getCart = async (req, res) => {
             price: product.price,
             discount_price: product.discount_price,
             image: product.images[0] || null,
+            slug: product.slug,
+            stock: product.stock,
           },
           color: item.color,
           quantity: item.quantity,
@@ -149,7 +151,10 @@ module.exports.addToCart = async (req, res) => {
 
     res.status(200).json({
       _status: true,
-      _message: existingItemIndex > -1 ? "Quantity Increased in cart" : "Product added to cart",
+      _message:
+        existingItemIndex > -1
+          ? "Quantity Increased in cart"
+          : "Product added to cart",
       _data: {
         cartId: cart._id,
         totalItems: cart.items.reduce((sum, item) => sum + item.quantity, 0),
@@ -244,6 +249,18 @@ module.exports.updateCartItem = async (req, res) => {
         _data: {
           availableStock: product?.stock || 0,
           currentQuantity: cart.items[itemIndex].quantity,
+        },
+      });
+    } else if (cart.items[itemIndex].quantity > quantity) {
+      cart.items[itemIndex].quantity = quantity;
+      await cart.save({ session });
+      await session.commitTransaction();
+      return res.status(200).json({
+        _status: true,
+        _message: "Cart updated successfully",
+        _data: {
+          itemId,
+          newQuantity: quantity,
         },
       });
     }

@@ -187,14 +187,13 @@ module.exports.updateProfile = async (req, res) => {
   try {
     const user = await userModel.findById(req.user._id);
 
-
     if (!user) {
       return res.status(404).json({
         _status: false,
         _message: "User not found",
       });
     }
-    
+
     let avatarUrl = user.avatar;
     if (req.file) {
       try {
@@ -222,8 +221,21 @@ module.exports.updateProfile = async (req, res) => {
 
     // Update user fields
     if (req.body.name) user.name = req.body.name;
-    if (req.body.phone) user.phone = req.body.phone;
+    if (req.body.address) user.address = JSON.parse(req.body.address);
+    if (req.body.mobile) user.mobile = req.body.mobile;
+    if (req.body.gender) user.gender = req.body.gender;
+
+    
+
+    if (req.body.pincode) user.address.pincode = req.body.pincode;
+    if (req.body.street) user.address.street = req.body.street;
+    if (req.body.city) user.address.city = req.body.city;
+    if (req.body.state) user.address.state = req.body.state;
+    if (req.body.area) user.address.area = req.body.area;
+    if (req.body.instructions) user.address.instructions = req.body.instructions;
+
     user.avatar = avatarUrl;
+   
 
     await user.save();
 

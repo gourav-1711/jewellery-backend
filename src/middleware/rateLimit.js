@@ -16,6 +16,7 @@ module.exports = {
   updateProfile: rateLimit({
     windowMs: 15 * 60 * 1000, 
     max: 5, 
+    
     message: "Too many tries to Update Profile, please try again later"
   }) ,
   passwordReset: rateLimit({
