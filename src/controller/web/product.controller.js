@@ -36,7 +36,6 @@ exports.getOne = async (request, response) => {
 
     response.send(output);
   } catch (err) {
-    console.log(err);
     const output = {
       _status: false,
       _message: err.message || "Something went wrong",
@@ -195,7 +194,6 @@ exports.getProductByFilter = async (req, res) => {
       _data: products,
     });
   } catch (err) {
-    console.log(err);
     res.send({
       _status: false,
       _message: err.message || "Something went wrong",

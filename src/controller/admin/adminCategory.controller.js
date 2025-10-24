@@ -22,7 +22,6 @@ exports.create = async (request, response) => {
 
     // Upload image to Cloudflare R2 if file exists
     if (request.file) {
-      console.log(request.file);
       
       const uploadResult = await uploadToR2(request.file, "categories");
 

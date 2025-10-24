@@ -129,7 +129,6 @@ module.exports.getProfile = async (req, res) => {
       _data: user,
     });
   } catch (error) {
-    console.log(error);
     return res.status(500).json({
       _status: false,
       _message: "Internal Server Error",
@@ -225,17 +224,15 @@ module.exports.updateProfile = async (req, res) => {
     if (req.body.mobile) user.mobile = req.body.mobile;
     if (req.body.gender) user.gender = req.body.gender;
 
-    
-
     if (req.body.pincode) user.address.pincode = req.body.pincode;
     if (req.body.street) user.address.street = req.body.street;
     if (req.body.city) user.address.city = req.body.city;
     if (req.body.state) user.address.state = req.body.state;
     if (req.body.area) user.address.area = req.body.area;
-    if (req.body.instructions) user.address.instructions = req.body.instructions;
+    if (req.body.instructions)
+      user.address.instructions = req.body.instructions;
 
     user.avatar = avatarUrl;
-   
 
     await user.save();
 
@@ -525,3 +522,193 @@ module.exports.completeVerify = async (req, res) => {
     });
   }
 };
+
+const { OAuth2Client } = require("google-auth-library");
+
+module.exports.googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        _status: false,
+        _message: "Google credential is required",
+      });
+    }
+
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    // Verify the Google ID token
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture: avatar, sub: googleId } = payload; // Added googleId
+
+    if (!email) {
+      return res.status(400).json({
+        _status: false,
+        _message: "Email not found in Google account",
+      });
+    }
+
+    // Check if user exists by email OR googleId
+    let user = await userModel.findOne({
+      $or: [{ email }, { googleId: sub }],
+    });
+
+    if (!user) {
+      // Create new user if not exists
+      user = await userModel.create({
+        name,
+        email,
+        password: await hashPassword(Math.random().toString(36).slice(-8)),
+        avatar,
+        googleId: sub, // Store Google ID
+        isEmailVerified: true,
+        status: true,
+      });
+    } else if (!user.status) {
+      return res.status(403).json({
+        _status: false,
+        _message: "Your account has been deactivated. Please contact support.",
+      });
+    } else if (!user.googleId) {
+      // Link Google account to existing email user
+      user.googleId = sub;
+      user.isEmailVerified = true;
+      if (!user.avatar) user.avatar = avatar;
+      await user.save();
+    }
+
+    // Generate JWT token
+    const token = generateToken(user);
+
+    // Omit sensitive data from response
+    const { password, ...userData } = user.toObject();
+
+    return res.status(200).json({
+      _status: true,
+      _message: "Login successful",
+      _data: {
+        token,
+        user: userData,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+    return res.status(500).json({
+      _status: false,
+      _message: "Error during Google authentication",
+      _error: error.message,
+    });
+  }
+};
+
+// New endpoint for OAuth2 redirect
+module.exports.googleAuthRedirect = async (req, res) => {
+  const redirectUri = `${process.env.FRONTEND_URL}/auth/google/callback`;
+
+  const googleAuthUrl =
+    `https://accounts.google.com/o/oauth2/v2/auth?` +
+    `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
+    `redirect_uri=${encodeURIComponent(redirectUri)}&` +
+    `response_type=code&` +
+    `scope=email profile&` +
+    `access_type=offline&` +
+    `prompt=select_account`; // Forces account selection
+
+  res.json({ url: googleAuthUrl });
+};
+
+// New endpoint to handle the callback
+module.exports.googleAuthCallback = async (req, res) => {
+  try {
+    const { code } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        _status: false,
+        _message: "Authorization code is required",
+      });
+    }
+
+
+    const client = new OAuth2Client(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      `${process.env.FRONTEND_URL}/auth/google/callback`
+    );
+
+    // Exchange code for tokens
+    const { tokens } = await client.getToken(code);
+    client.setCredentials(tokens);
+
+    // Get user info
+    const ticket = await client.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture: avatar, sub: googleId } = payload;
+
+    if (!email) {
+      return res.status(400).json({
+        _status: false,
+        _message: "Email not found in Google account",
+      });
+    }
+
+    // Check if user exists
+    let user = await userModel.findOne({
+      $or: [{ email }, { googleId }],
+    });
+
+    if (!user) {
+      user = await userModel.create({
+        name,
+        email,
+        password: await hashPassword(Math.random().toString(36).slice(-8)),
+        avatar,
+        googleId,
+        isEmailVerified: true,
+        status: true,
+      });
+    } else if (!user.status) {
+      return res.status(403).json({
+        _status: false,
+        _message: "Your account has been deactivated. Please contact support.",
+      });
+    } else if (!user.googleId) {
+      user.googleId = googleId;
+      user.isEmailVerified = true;
+      if (!user.avatar) user.avatar = avatar;
+      await user.save();
+    }
+
+    // Generate JWT token
+    const token = generateToken(user);
+
+    const { password, ...userData } = user.toObject();
+
+    return res.status(200).json({
+      _status: true,
+      _message: "Login successful",
+      _data: {
+        token,
+        user: userData,
+      },
+    });
+  } catch (error) {
+    console.error("Google auth callback error:", error);
+    return res.status(500).json({
+      _status: false,
+      _message: "Error during Google authentication",
+      _error: error.message,
+    });
+  }
+};
+ 

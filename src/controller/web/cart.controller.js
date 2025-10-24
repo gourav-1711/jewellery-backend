@@ -106,7 +106,6 @@ module.exports.addToCart = async (req, res) => {
       });
     }
 
-    console.log(product.stock, quantity);
     // Check stock availability
     if (product.stock < quantity) {
       await session.abortTransaction();

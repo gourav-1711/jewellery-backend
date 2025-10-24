@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 module.exports.getWishlist = async (req, res) => {
     try {
         const wishlist = await Wishlist.findOne({ user: req.user._id })
-            .populate('products', 'name price discount_price images slug');
+            .populate('products', 'name price discount_price images slug stock');
         
         if (!wishlist || wishlist.products.length === 0) {
             return res.status(200).json({
@@ -29,7 +29,7 @@ module.exports.getWishlist = async (req, res) => {
         res.status(200).json({
             _status: true,
             _message: 'Wishlist retrieved successfully',
-            _data: { items }
+            _data:  items 
         });
     } catch (error) {
         console.error('Error in getWishlist:', error);

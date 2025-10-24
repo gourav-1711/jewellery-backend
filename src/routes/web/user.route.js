@@ -11,6 +11,8 @@ const {
   verifyUser,
   completeVerify,
   changePassword,
+  googleLogin,
+  googleAuthCallback,
 } = require("../../controller/web/user.controller");
 const protect = require("../../middleware/authMiddleware");
 const rateLimit = require("../../middleware/rateLimit");
@@ -60,5 +62,9 @@ router.post(
 router.post("/verify-user", protect, uploadNone, verifyUser);
 
 router.post("/complete-verify", protect, uploadNone, completeVerify);
+
+// router.post("/google-login", uploadNone, googleLogin);
+
+router.post("/google-callback", uploadNone, googleAuthCallback);
 
 module.exports = router;

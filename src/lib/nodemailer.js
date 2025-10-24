@@ -34,6 +34,18 @@ const templates = {
     subject: "Verify Your Email",
     template: "verify-email.ejs",
   },
+  contactEmail: {
+    subject: "New Contact Form Submission",
+    template: "contact-email.ejs",
+  },
+  orderConfirmed: {
+    subject: "Your Order #<%= orderId %> is Confirmed!",
+    template: "order-confirmed.ejs",
+  },
+  paymentFailed: {
+    subject: "Payment Failed for Order #<%= orderId %>",
+    template: "payment-failed.ejs",
+  },
 };
 
 // --- Render EJS template ---

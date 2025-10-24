@@ -35,7 +35,6 @@ exports.login = async (req, res) => {
       _token: token,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       _status: false,
       _message: "Internal Server Error",
@@ -55,7 +54,6 @@ exports.findAllUser = async (req, res) => {
       _data: users,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       _status: false,
       _message: "Internal Server Error",
@@ -82,7 +80,6 @@ exports.getFullDetails = async (req, res) => {
       _reviews: reviews,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       _status: false,
       _message: "Internal Server Error",

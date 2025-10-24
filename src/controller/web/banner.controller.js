@@ -6,7 +6,6 @@ exports.bannerController = async (req, res) => {
       status: true,
       deletedAt: null,
     });
-    console.log(bannerData);
     res.status(200).json({
       _status: true,
       _message: "Banner Data",

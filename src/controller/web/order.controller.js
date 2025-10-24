@@ -54,7 +54,7 @@ const sendOTP = async (email, phone, otp, orderId) => {
 // ============================================
 
 // 1. Create Order (from Cart or Direct Purchase)
- exports.createOrder = async (req, res) => {
+exports.createOrder = async (req, res) => {
   try {
     const {
       purchaseType, // 'cart' or 'direct'
@@ -72,6 +72,7 @@ const sendOTP = async (email, phone, otp, orderId) => {
 
     let orderItems = [];
     let subtotal = 0;
+    
 
     // Handle Cart Purchase
     if (purchaseType === "cart") {
@@ -87,15 +88,6 @@ const sendOTP = async (email, phone, otp, orderId) => {
       // Process cart items
       for (const cartItem of cart.items) {
         const product = cartItem.productId;
-
-        // Validate stock
-        const colorVariant = product.colors.id(cartItem.colorId);
-        if (!colorVariant || colorVariant.stock < cartItem.quantity) {
-          return res.status(400).json({
-            success: false,
-            message: `Insufficient stock for ${product.name}`,
-          });
-        }
 
         const itemSubtotal = product.price * cartItem.quantity;
         subtotal += itemSubtotal;
@@ -129,15 +121,6 @@ const sendOTP = async (email, phone, otp, orderId) => {
           });
         }
 
-        // Validate stock
-        const colorVariant = product.colors.id(item.colorId);
-        if (!colorVariant || colorVariant.stock < item.quantity) {
-          return res.status(400).json({
-            success: false,
-            message: `Insufficient stock for ${product.name}`,
-          });
-        }
-
         const itemSubtotal = product.price * item.quantity;
         subtotal += itemSubtotal;
 
@@ -163,11 +146,11 @@ const sendOTP = async (email, phone, otp, orderId) => {
     let couponId = null;
 
     // TODO: Apply coupon logic here
-    if (couponCode) {
-      // Validate and apply coupon
-      // discount = ...
-      // couponId = ...
-    }
+    // if (couponCode) {
+    //   // Validate and apply coupon
+    //   // discount = ...
+    //   // couponId = ...
+    // }
 
     const shipping = subtotal > 1000 ? 0 : 50; // Free shipping above ₹1000
     const giftWrapCharges = giftWrap ? 50 : 0;
@@ -319,7 +302,7 @@ exports.verifyPayment = async (req, res) => {
       // Send failure email
       await sendEmail(
         order.shippingAddress.email,
-        "Payment Failed",
+        "paymentFailed",
         `Your payment for order ${order.orderId} has failed. Please try again.`
       );
 
@@ -382,7 +365,7 @@ exports.verifyPayment = async (req, res) => {
 
     await sendEmail(
       order.shippingAddress.email,
-      "Order Confirmed",
+      "orderConfirmed",
       `Your order ${order.orderId} has been confirmed! Total: ₹${order.pricing.total}. Delivery OTP: ${deliveryOTP}`
     );
 

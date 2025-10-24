@@ -14,7 +14,7 @@ router.post("/view", protect, getWishlist);
 
 router.post("/add", protect, uploadNone, addToWishlist);
 
-router.put("/:productId", protect, removeFromWishlist);
+router.put("/remove/:productId", protect, removeFromWishlist);
 
 router.post("/check/:productId", protect, checkInWishlist);
 
