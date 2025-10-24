@@ -407,7 +407,7 @@ module.exports.verifyUser = async (req, res) => {
     if (user.isEmailVerified) {
       return res.status(200).json({
         _status: false,
-        _message: "User already verified",
+        _message: "You Account is Already Verified",
       });
     }
     const email = user.email;
@@ -635,7 +635,6 @@ module.exports.googleAuthCallback = async (req, res) => {
       });
     }
 
-
     const client = new OAuth2Client(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -711,4 +710,3 @@ module.exports.googleAuthCallback = async (req, res) => {
     });
   }
 };
- 
