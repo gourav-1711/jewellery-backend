@@ -10,7 +10,7 @@ const categorySchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      required: [true, "Image URL is required"],
+      default: "",
     },
     slug: {
       type: String,
@@ -43,7 +43,6 @@ const categorySchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
 
 const Category = mongoose.model("Categories", categorySchema);
 

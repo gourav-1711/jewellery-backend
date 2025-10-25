@@ -131,7 +131,7 @@ exports.view = async (request, response) => {
       inStock,
     } = request.query;
 
-    const query = { deletedAt: null };
+    const query = {deletedAt: null}
 
     // Filter by category
     if (categories) {
