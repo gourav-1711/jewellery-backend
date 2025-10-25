@@ -142,9 +142,8 @@ exports.destroy = async (req, res) => {
     }
 
     // Permanently delete from database
-    await logoModal.findByIdAndUpdate(req.params.id, {
-      deletedAt: Date.now(),
-    });
+    logo.deletedAt = new Date.now();
+    await logo.save();
 
     const output = {
       _status: true,

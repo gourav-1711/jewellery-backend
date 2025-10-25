@@ -405,10 +405,12 @@ exports.destroy = async (req, res) => {
     if (!product) {
       throw new Error("Product not found");
     }
-
     product.deletedAt = Date.now();
-    await product.save();
-
+    await Product.findByIdAndUpdate(
+      id,
+      { deletedAt: Date.now() },
+      { new: true }
+    );
     res.send({
       _status: true,
       _message: "Product deleted successfully",
