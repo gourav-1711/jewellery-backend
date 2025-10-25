@@ -71,7 +71,7 @@ const uploadToR2 = async (file, folder = "users") => {
     await s3Client.send(command);
 
     // Generate public URL (if public access is enabled) // slash is in env
-    const fileUrl = `${process.env.CLOUDFARE_PUBLIC_URL}${fileName}`;
+    const fileUrl = `${process.env.CLOUDFLARE_PUBLIC_URL}${fileName}`;
 
     return {
       success: true,
