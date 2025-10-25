@@ -257,7 +257,7 @@ exports.update = async (request, response) => {
           "products"
         );
         if (uploadResult.success) {
-          data.image = uploadResult.url;
+          updateData.image = uploadResult.url;
         } else {
           throw new Error("Failed to upload main image");
         }
@@ -272,7 +272,7 @@ exports.update = async (request, response) => {
             imageUrls.push(uploadResult.url);
           }
         }
-        data.images = imageUrls;
+        updateData.images = imageUrls;
       }
     }
 

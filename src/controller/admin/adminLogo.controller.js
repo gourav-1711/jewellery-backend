@@ -95,33 +95,18 @@ exports.update = async (req, res) => {
 
       if (uploadResult.success) {
         // Delete old image from R2 if exists
-        if (existingLogo.image) {
-          const oldFileName = getFileNameFromUrl(existingLogo.image);
-          if (oldFileName) {
-            try {
-              await deleteFromR2(oldFileName);
-            } catch (deleteError) {
-              return res.status(500).json({
-                _status: false,
-                _message: "Failed to delete old Logo",
-                _data: null,
-              });
-            }
-          }
-        }
+       
 
-        data.image = uploadResult.url;
+        data.logo = uploadResult.url;
       } else {
         throw new Error("Failed to upload image");
       }
     }
 
-    data.updated_at = Date.now();
 
     const logo = await logoModal.findByIdAndUpdate(
       req.params.id,
       { $set: data },
-      { new: true }
     );
 
     const output = {
@@ -156,24 +141,10 @@ exports.destroy = async (req, res) => {
       return res.status(404).json(output);
     }
 
-    // Delete image from Cloudflare R2 if exists
-    if (logo.logo) {
-      const fileName = getFileNameFromUrl(logo.logo);
-      if (fileName) {
-        try {
-          await deleteFromR2(fileName);
-        } catch (deleteError) {
-          return res.status(500).json({
-            _status: false,
-            _message:  "Failed to delete old Logo",
-            _data: null,
-          });
-        }
-      }
-    }
-
     // Permanently delete from database
-    await logoModal.findByIdAndDelete(req.params.id);
+    await logoModal.findByIdAndUpdate(req.params.id, {
+      deletedAt: Date.now(),
+    });
 
     const output = {
       _status: true,
