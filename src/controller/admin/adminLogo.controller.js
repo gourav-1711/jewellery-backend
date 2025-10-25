@@ -142,7 +142,7 @@ exports.destroy = async (req, res) => {
     }
 
     // Permanently delete from database
-    logo.deletedAt = new Date.now();
+    logo.deletedAt = Date.now();
     await logo.save();
 
     const output = {
