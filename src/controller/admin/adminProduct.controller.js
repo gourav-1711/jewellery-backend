@@ -249,38 +249,31 @@ exports.update = async (request, response) => {
     }
 
     // Upload new main image if provided
-    if (request.file) {
-      const uploadResult = await uploadToR2(request.file, "products");
-
-      if (uploadResult.success) {
-        // Delete old image if exists
-        if (existingProduct.image) {
-          await deleteFromR2(existingProduct.image);
-        }
-        updateData.image = uploadResult.url;
-      }
-    }
-
-    // Upload new multiple images if provided
-    if (request.files && request.files.length > 0) {
-      const imageUrls = [];
-
-      for (const file of request.files) {
-        const uploadResult = await uploadToR2(file, "products");
-
+    if (request.files) {
+      // Handle main image
+      if (request.files.image && request.files.image[0]) {
+        const uploadResult = await uploadToR2(
+          request.files.image[0],
+          "products"
+        );
         if (uploadResult.success) {
-          imageUrls.push(uploadResult.url);
+          data.image = uploadResult.url;
+        } else {
+          throw new Error("Failed to upload main image");
         }
       }
 
-      // Delete old images if exists
-      if (existingProduct.images && existingProduct.images.length > 0) {
-        for (const imageUrl of existingProduct.images) {
-          await deleteFromR2(imageUrl);
+      // Handle additional images
+      if (request.files.images && request.files.images.length > 0) {
+        const imageUrls = [];
+        for (const file of request.files.images) {
+          const uploadResult = await uploadToR2(file, "products");
+          if (uploadResult.success) {
+            imageUrls.push(uploadResult.url);
+          }
         }
+        data.images = imageUrls;
       }
-
-      updateData.images = imageUrls;
     }
 
     // Update slug if name changed
