@@ -74,13 +74,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please enter a description"],
     },
-    short_description: {
+    
+    purity: {
       type: String,
-      required: [true, "Please enter a short description"],
-    },
-    dimensions: {
-      type: String,
-      required: [true, "Please enter a dimensions"],
+     required: [true, "Please enter a purity"],
     },
     code: {
       type: String,
