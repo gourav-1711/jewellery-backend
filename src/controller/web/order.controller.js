@@ -3,16 +3,12 @@ const crypto = require("crypto");
 const Order = require("../../models/order.js");
 const Product = require("../../models/product.js");
 const Cart = require("../../models/cart.js");
-
+require("dotenv").config();
 // Initialize Razorpay
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
-
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
 
 // Generate 6-digit OTP
 const generateOTP = () => {
@@ -72,7 +68,6 @@ exports.createOrder = async (req, res) => {
 
     let orderItems = [];
     let subtotal = 0;
-    
 
     // Handle Cart Purchase
     if (purchaseType === "cart") {
@@ -230,7 +225,6 @@ exports.createRazorpayOrder = async (req, res) => {
         message: "Order is not in pending state",
       });
     }
-
     // Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
       amount: order.pricing.total * 100, // Amount in paise
@@ -241,7 +235,6 @@ exports.createRazorpayOrder = async (req, res) => {
         userId: userId.toString(),
       },
     });
-
     // Update order with Razorpay order ID
     order.payment.razorpay.orderId = razorpayOrder.id;
     await order.save();

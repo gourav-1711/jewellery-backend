@@ -135,6 +135,7 @@ exports.getProductByFilter = async (req, res) => {
       deletedAt: null,
       status: true,
     };
+    console.log(categorySlug , subCategorySlug , subSubCategorySlug);
 
     // ✅ Boolean filters
     if (isFeatured !== undefined) query.isFeatured = isFeatured;
@@ -185,7 +186,7 @@ exports.getProductByFilter = async (req, res) => {
       .populate("subSubCategory", "name slug")
       .populate("colors", "name code")
       .populate("material", "name ")
-      .limit(30)
+      .limit(20)
       .sort("-createdAt");
 
     res.send({

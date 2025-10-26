@@ -2,7 +2,10 @@ const whyChooseUs = require("../../models/whyChooseUs");
 
 exports.whyChooseUsController = async (req, res) => {
   try {
-    const whyChooseUsData = await whyChooseUs.find();
+    const whyChooseUsData = await whyChooseUs.find({
+      deletedAt: null,
+      status: true,
+    });
     res.status(200).json({
       _status: true,
       _message: "Why Choose Us Data",
