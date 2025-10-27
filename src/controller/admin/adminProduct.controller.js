@@ -269,10 +269,9 @@ exports.update = async (request, response) => {
         for (const file of request.files.images) {
           const uploadResult = await uploadToR2(file, "products");
           if (uploadResult.success) {
-            imageUrls.push(uploadResult.url);
+            updateData.images.push(uploadResult.url);
           }
         }
-        updateData.images = imageUrls;
       }
     }
 
