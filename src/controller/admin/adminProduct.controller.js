@@ -131,7 +131,7 @@ exports.view = async (request, response) => {
       inStock,
     } = request.query;
 
-    const query = {deletedAt: null}
+    const query = { deletedAt: null };
 
     // Filter by category
     if (categories) {
@@ -241,7 +241,7 @@ exports.update = async (request, response) => {
   try {
     const { id } = request.params;
     const updateData = { ...request.body };
-
+    const removeImagesUrl = request.body.removeImagesUrl || [];
     // Find existing product
     const existingProduct = await Product.findById(id);
     if (!existingProduct) {
@@ -264,11 +264,17 @@ exports.update = async (request, response) => {
       }
 
       // Handle additional images
-      if (request.files.images && request.files.images.length > 0) {
-        const imageUrls = [];
+      if (request.files?.images?.length > 0) {
+        updateData.images = existingProduct.images || [];
+        if(removeImagesUrl.length > 0){
+          removeImagesUrl.forEach((url) => {
+            updateData.images = updateData.images.filter((image) => image !== url);
+          });
+        }
+
         for (const file of request.files.images) {
           const uploadResult = await uploadToR2(file, "products");
-          if (uploadResult.success) {
+          if (uploadResult?.success && uploadResult?.url) {
             updateData.images.push(uploadResult.url);
           }
         }
