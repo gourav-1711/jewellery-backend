@@ -53,7 +53,7 @@ exports.getReviewById = async (req, res) => {
   }
 };
 
-// 🟢 Update review 
+// 🟢 Update review
 exports.updateReview = async (req, res) => {
   try {
     const { id } = req.params;
@@ -91,6 +91,20 @@ exports.deleteReview = async (req, res) => {
   try {
     const { id } = req.params;
 
+    const Review = await Reviews.find({
+      _id: id,
+    });
+
+    if(!Review.userId){
+      await Reviews.findByIdAndDelete(id);
+      return res.status(200).json({
+        _status: true,
+        _message: "Review deleted successfully",
+        _data: null,
+      });
+    }
+    
+
     const review = await Reviews.findById(id);
     if (!review) {
       return res.status(404).json({
@@ -115,4 +129,39 @@ exports.deleteReview = async (req, res) => {
       _data: null,
     });
   }
+};
+
+exports.changeStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await Reviews.updateMany(
+      {
+        _id: id,
+      },
+      [
+        {
+          $set: {
+            status: {
+              $not: "$status",
+            },
+          },
+        },
+      ]
+    );
+
+    if (result.matchedCount === 0) {
+      return response.status(404).json({
+        _status: false,
+        _message: "No Data Found",
+        _data: null,
+      });
+    }
+
+    return response.status(200).json({
+      _status: true,
+      _message: "Status Changed",
+      _data: result,
+    });
+  } catch (error) {}
 };

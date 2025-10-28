@@ -316,30 +316,43 @@ exports.getAll = async (req, res) => {
 
 exports.relatedProducts = async (req, res) => {
   try {
-    const { subCategorySlug, subSubCategorySlug } = req.body;
+    const { subCategoryIds, subSubCategoryIds } = req.body;
 
-    const subCatId = await SubCategory.findOne({ slug: subCategorySlug });
+    let products = [];
 
-    let subSubCatId = "";
-
-    let filter = {
-      subCategory: { $in: [subCatId] },
-    };
-    if (!subCategorySlug) {
-      subSubCatId = await SubSubCategory.findOne({ slug: subSubCategorySlug });
-      filter = {
-        subSubCategory: { $in: [subSubCatId] },
-      };
+    // First priority: Find products matching subSubCategory IDs
+    if (subSubCategoryIds && subSubCategoryIds.length > 0) {
+      products = await Product.find({
+        subSubCategory: { $in: subSubCategoryIds },
+      })
+        .limit(10)
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
+        .populate("subSubCategory", "name slug")
+        .populate("colors", "name code")
+        .populate("material", "name");
     }
 
-    // Find products that have this slug in their subCategory array
-    const products = await Product.find(filter)
-      .limit(10)
-      .populate("category", "name slug")
-      .populate("subCategory", "name slug")
-      .populate("subSubCategory", "name slug")
-      .populate("colors", "name code")
-      .populate("material", "name ");
+    // If we don't have enough products (less than 10), fill with subCategory matches
+    if (products.length < 10 && subCategoryIds && subCategoryIds.length > 0) {
+      const remainingLimit = 10 - products.length;
+
+      // Get product IDs we already have to exclude them
+      const existingProductIds = products.map((p) => p._id);
+
+      const subCategoryProducts = await Product.find({
+        subCategory: { $in: subCategoryIds },
+        _id: { $nin: existingProductIds }, // Exclude already fetched products
+      })
+        .limit(remainingLimit)
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
+        .populate("subSubCategory", "name slug")
+        .populate("colors", "name code")
+        .populate("material", "name");
+
+      products = [...products, ...subCategoryProducts];
+    }
 
     res.send({
       _status: true,

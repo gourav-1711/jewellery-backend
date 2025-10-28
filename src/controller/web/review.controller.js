@@ -4,7 +4,16 @@ const Product = require("../../models/product");
 exports.createReview = async (req, res) => {
   try {
     const { productId, rating, comment } = req.body;
-    const userId = req.user?._id; // assuming you're using auth middleware
+    const userId = req.user?._id;
+    console.log(productId);
+
+    if (!userId) {
+      return res.status(401).json({
+        _status: false,
+        _message: "Please Login TO add review",
+        _data: null,
+      });
+    }
 
     // Validation
     if (!productId || !rating || !comment) {
@@ -15,18 +24,12 @@ exports.createReview = async (req, res) => {
       });
     }
 
-    // Check if product exists
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({
-        _status: false,
-        _message: "Product not found",
-        _data: null,
-      });
-    }
-
     // Check if user already reviewed this product
-    const existingReview = await Reviews.findOne({ user: userId, product: productId });
+    const existingReview = await Reviews.findOne({
+      userId,
+      productId,
+    });
+    console.log(existingReview);
     if (existingReview) {
       return res.status(400).json({
         _status: false,
@@ -37,8 +40,8 @@ exports.createReview = async (req, res) => {
 
     // Create new review
     const review = await Reviews.create({
-      user: userId,
-      product: productId,
+      userId,
+      productId,
       rating,
       comment,
     });
@@ -62,16 +65,20 @@ exports.getReviewsByProduct = async (req, res) => {
     const { productId } = req.params;
 
     const reviews = await Reviews.find({
-      product: productId,
+      productId,
       deletedAt: null,
     })
-      .populate("user", "name email avatar")
+      .populate("userId", "name email avatar")
       .sort("-createdAt");
+
+    const avgRating =
+      reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length;
 
     res.status(200).json({
       _status: true,
-      _message: "Reviews fetched successfully",
+      _message: "Product Reviews Found",
       _data: reviews,
+      _rating: avgRating,
     });
   } catch (error) {
     res.status(500).json({
