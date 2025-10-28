@@ -126,16 +126,21 @@ exports.getProductByFilter = async (req, res) => {
       isTopRated,
       isUpsell,
       isOnSale,
+      colorIds,
+      materialIds,
       categorySlug,
       subCategorySlug,
       subSubCategorySlug,
+      priceFrom,
+      priceTo,
+      limit = 20,
+      page = 1,
     } = req.body || {}; // ✅ default to empty object
 
     const query = {
       deletedAt: null,
       status: true,
     };
-    console.log(categorySlug , subCategorySlug , subSubCategorySlug);
 
     // ✅ Boolean filters
     if (isFeatured !== undefined) query.isFeatured = isFeatured;
@@ -179,6 +184,24 @@ exports.getProductByFilter = async (req, res) => {
       }
     }
 
+    if (colorIds?.length > 0) {
+      query.colors = { $in: colorIds };
+    }
+
+    if (materialIds?.length > 0) {
+      query.material = { $in: materialIds };
+    }
+
+    // ✅ Price range filter
+    if (priceFrom !== undefined && priceTo !== undefined) {
+      query.price = { $gte: Number(priceFrom), $lte: Number(priceTo) };
+    } else if (priceFrom !== undefined) {
+      query.price = { $gte: Number(priceFrom) };
+    } else if (priceTo !== undefined) {
+      query.price = { $lte: Number(priceTo) };
+    }
+    const total = await Product.countDocuments(query);
+    const skip = (page - 1) * limit;
     // ✅ Fetch results
     const products = await Product.find(query)
       .populate("category", "name slug")
@@ -186,13 +209,20 @@ exports.getProductByFilter = async (req, res) => {
       .populate("subSubCategory", "name slug")
       .populate("colors", "name code")
       .populate("material", "name ")
-      .limit(20)
+      .limit(limit)
+      .skip(skip)
       .sort("-createdAt");
 
     res.send({
       _status: true,
-      _message: "Filtered products fetched successfully",
+      _message: "Products Found",
       _data: products,
+      _pagination: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(total / limit),
+      },
     });
   } catch (err) {
     res.send({
@@ -206,22 +236,49 @@ exports.getProductByFilter = async (req, res) => {
 exports.getBySearch = async (req, res) => {
   try {
     const { search } = req.body;
-    const products = await Product.find({
-      name: { $regex: search, $options: "i" },
-      slug: { $regex: search, $options: "i" },
-      deletedAt: null,
-      status: true,
-    })
+
+    // Trim and validate search term
+    if (!search || search.trim() === "") {
+      return res.send({
+        _status: false,
+        _message: "Search term is required",
+        _data: [],
+      });
+    }
+
+    const trimmedSearch = search.trim();
+
+    // Split search term into words for better matching
+    const searchWords = trimmedSearch.split(/\s+/);
+    // Build regex patterns for each word
+    const regexPatterns = searchWords.map((word) => ({
+      $or: [
+        { name: { $regex: word, $options: "i" } },
+        { slug: { $regex: word, $options: "i" } },
+        { description: { $regex: word, $options: "i" } },
+      ],
+    }));
+
+    const query = {
+      $and: [...regexPatterns, { deletedAt: null }, { status: true }],
+    };
+
+    const products = await Product.find(query)
       .populate("category", "name slug")
       .populate("subCategory", "name slug")
       .populate("subSubCategory", "name slug")
-      .sort("-createdAt");
+      .populate("colors", "name code")
+      .populate("material", "name ")
+      .sort("-createdAt")
+      .limit(20);
+
     res.send({
       _status: true,
       _message: "Products fetched successfully",
       _data: products,
     });
   } catch (err) {
+    console.error("Search error:", err);
     res.send({
       _status: false,
       _message: err.message || "Something went wrong",
@@ -244,6 +301,49 @@ exports.getAll = async (req, res) => {
     res.send({
       _status: true,
       _message: "Products fetched successfully",
+      _data: products,
+    });
+  } catch (err) {
+    res.send({
+      _status: false,
+      _message: err.message || "Something went wrong",
+      _data: [],
+    });
+  }
+};
+
+// Related Products API (based on subCategory slug)
+
+exports.relatedProducts = async (req, res) => {
+  try {
+    const { subCategorySlug, subSubCategorySlug } = req.body;
+
+    const subCatId = await SubCategory.findOne({ slug: subCategorySlug });
+
+    let subSubCatId = "";
+
+    let filter = {
+      subCategory: { $in: [subCatId] },
+    };
+    if (!subCategorySlug) {
+      subSubCatId = await SubSubCategory.findOne({ slug: subSubCategorySlug });
+      filter = {
+        subSubCategory: { $in: [subSubCatId] },
+      };
+    }
+
+    // Find products that have this slug in their subCategory array
+    const products = await Product.find(filter)
+      .limit(10)
+      .populate("category", "name slug")
+      .populate("subCategory", "name slug")
+      .populate("subSubCategory", "name slug")
+      .populate("colors", "name code")
+      .populate("material", "name ");
+
+    res.send({
+      _status: true,
+      _message: "Related products fetched successfully",
       _data: products,
     });
   } catch (err) {
