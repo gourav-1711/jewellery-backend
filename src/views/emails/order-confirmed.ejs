@@ -74,7 +74,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="<%= logoUrl || 'https://your-jewellery-store.com/logo.png' %>" alt="Jewellery Walla" class="logo">
+        
         <h1>Your Order is Confirmed!</h1>
         <p>Thank you for shopping with us. Here's your order confirmation.</p>
     </div>
@@ -97,7 +97,7 @@
                 <tr>
                     <td><%= item.name %></td>
                     <td><%= item.quantity %></td>
-                    <td>₹<%= item.price %></td>
+                    <td>₹<%= item.discount_price || item.price %></td>
                 </tr>
                 <% }); %>
             </tbody>
@@ -120,6 +120,11 @@
             Phone: <%= shippingAddress.phone %>
         </p>
 
+        <div style="text-align: right; margin-top: 20px;">
+            <p><strong>Package ID:</strong> <%= packageId %></p>
+            <p>Please Confirm It with The package Id written on Bill</p>
+        </div>
+
         <div class="otp-box">
             <p>Please provide this OTP to the delivery agent to receive your order:</p>
             <h2 style="text-align: center; letter-spacing: 5px; color: #7c3aed;"><%= deliveryOTP %></h2>
@@ -127,12 +132,12 @@
 
         <p>We'll send you a notification when your order is out for delivery.</p>
         
-        <a href="<%= orderTrackingUrl || '#' %>" class="button">Track Your Order</a>
+      
     </div>
 
     <div class="footer">
-        <p>If you have any questions about your order, please contact our customer support at <a href="mailto:support@jewellerywalla.com">support@jewellerywalla.com</a></p>
-        <p>© <%= new Date().getFullYear() %> Jewellery Walla. All rights reserved.</p>
+        <p>If you have any questions about your order, please contact our customer support at <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a></p>
+        <p>© <%= new Date().getFullYear() %> Jewellry Wala. All rights reserved.</p>
     </div>
 </body>
 </html>

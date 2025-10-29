@@ -1,11 +1,22 @@
 const color = require("../../models/color");
-
+const cache = require("../../lib/cache");
 exports.colorController = async (req, res) => {
   try {
-    const colorData = await color.find({
-      status: true,
-      deletedAt: null,
-    });
+    const colorDataCache = await cache.get("colorData");
+    if (colorDataCache) { 
+      return res.status(200).json({
+        _status: true,
+        _message: "Color Data",
+        _data: colorDataCache,
+      });
+    }
+    const colorData = await color
+      .find({
+        status: true,
+        deletedAt: null,
+      })
+      .lean();
+    cache.set("colorData", colorData);
     res.status(200).json({
       _status: true,
       _message: "Color Data",

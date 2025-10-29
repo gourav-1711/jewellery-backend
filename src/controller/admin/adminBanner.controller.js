@@ -1,5 +1,5 @@
 const bannerModal = require("../../models/banner");
-
+const cache = require("../../lib/cache");
 const { uploadToR2 } = require("../../lib/cloudflare");
 require("dotenv").config();
 

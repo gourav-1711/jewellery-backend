@@ -7,8 +7,8 @@ module.exports.getCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.user._id })
       .populate("items.product")
-      .populate("items.color");
-
+      .populate("items.color")
+      .lean();
     if (!cart || cart.items.length === 0) {
       return res.status(200).json({
         _status: true,
@@ -16,16 +16,15 @@ module.exports.getCart = async (req, res) => {
         _data: { items: [], totalItems: 0, totalPrice: 0 },
       });
     }
-
     // Calculate total items and price
     let totalItems = 0;
     let totalPrice = 0;
 
     const items = await Promise.all(
       cart.items.map(async (item) => {
-        const product = await Product.findById(item.product).select(
-          "name price discount_price images slug stock"
-        );
+        const product = await Product.findById(item.product)
+          .select("name price discount_price images slug stock")
+          .lean();
         const itemTotal =
           product.discount_price > 0
             ? product.discount_price * item.quantity
@@ -51,7 +50,6 @@ module.exports.getCart = async (req, res) => {
         };
       })
     );
-
     res.status(200).json({
       _status: true,
       _message: "Cart retrieved successfully",

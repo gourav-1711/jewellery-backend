@@ -2,7 +2,7 @@ const { generateUniqueSlug } = require("../../lib/slugFunc");
 const subSubCategory = require("../../models/subSubCategory");
 const { uploadToR2 } = require("../../lib/cloudflare");
 require("dotenv").config();
-
+const cache = require("../../lib/cache");
 // create
 exports.create = async (request, response) => {
   try {
@@ -23,7 +23,7 @@ exports.create = async (request, response) => {
     data.slug = slug;
 
     const ress = await data.save();
-
+    cache.del("navigationData");
     const output = {
       _status: true,
       _message: "Data Inserted",
@@ -96,12 +96,11 @@ exports.view = async (request, response) => {
       filter.$or = orCondition;
     }
 
-    const totalRecords = await subSubCategory.find(filter).countDocuments();
-
     const ress = await subSubCategory
       .find(filter)
       .sort({ order: "asc", _id: "desc" })
-      .populate("subCategory");
+      .populate("subCategory")
+      .lean();
 
     const output = {
       _status: ress.length > 0,
@@ -148,7 +147,7 @@ exports.destroy = async (request, response) => {
       _message: "No Data Deleted",
       _data: err.message || null,
     };
-
+    cache.del("navigationData");
     response.send(output);
   }
 };
@@ -156,9 +155,11 @@ exports.destroy = async (request, response) => {
 // get details
 exports.details = async (request, response) => {
   try {
-    const result = await subSubCategory.findById({
-      _id: request.body.id,
-    });
+    const result = await subSubCategory
+      .findById({
+        _id: request.body.id,
+      })
+      .lean();
 
     const output = {
       _status: result ? true : false,
@@ -212,7 +213,7 @@ exports.update = async (request, response) => {
       _message: "Data Updated",
       _data: ress,
     };
-
+    cache.del("navigationData");
     response.send(output);
   } catch (err) {
     const output = {
@@ -242,7 +243,7 @@ exports.changeStatus = async (request, response) => {
         },
       ]
     );
-
+    cache.del("navigationData");
     const output = {
       _status: true,
       _message: "Status Changed",

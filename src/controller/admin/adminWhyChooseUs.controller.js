@@ -1,6 +1,6 @@
 const whyChooseUs = require("../../models/whyChooseUs");
 const { uploadToR2 } = require("../../lib/cloudflare");
-
+const cache = require("../../lib/cache");
 // create
 exports.create = async (request, response) => {
   try {
@@ -22,7 +22,7 @@ exports.create = async (request, response) => {
     }
 
     const ress = await data.save();
-
+    cache.del("whyChooseUsData");
     response.send({
       _status: true,
       _message: "Data Inserted",
@@ -125,7 +125,7 @@ exports.destroy = async (request, response) => {
       _message: "Data Deleted",
       _data: result,
     };
-
+    cache.del("whyChooseUsData");
     response.send(output);
   } catch (err) {
     const output = {
@@ -187,7 +187,7 @@ exports.update = async (request, response) => {
       { _id: id },
       { $set: data }
     );
-
+    cache.del("whyChooseUsData");
     response.send({
       _status: true,
       _message: "Data Updated",
@@ -226,7 +226,7 @@ exports.changeStatus = async (request, response) => {
       _message: "Status Changed",
       _data: result,
     };
-
+    cache.del("whyChooseUsData");
     response.send(output);
   } catch (err) {
     const output = {

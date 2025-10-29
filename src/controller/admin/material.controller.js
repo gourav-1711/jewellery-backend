@@ -1,4 +1,5 @@
 const material = require("../../models/material");
+const cache = require("../../lib/cache");
 // create
 exports.create = async (request, response) => {
   try {
@@ -26,7 +27,7 @@ exports.create = async (request, response) => {
         _data: [],
       });
     }
-
+    cache.del("materialData");
     // Handle other errors
     return response.status(500).json({
       _status: false,
@@ -39,8 +40,6 @@ exports.create = async (request, response) => {
 // view
 exports.view = async (request, response) => {
   try {
-    
-
     const andCondition = [{ deletedAt: null }];
     const orCondition = [];
 
@@ -51,8 +50,6 @@ exports.view = async (request, response) => {
     }
 
     if (request.body != undefined) {
-      
-
       if (request.body.name != undefined) {
         const name = new RegExp(request.body.name, "i");
         orCondition.push({ name: name });
@@ -63,12 +60,9 @@ exports.view = async (request, response) => {
       filter.$or = orCondition;
     }
 
-        
-
     const ress = await material
       .find(filter)
-      .sort({ order: "asc", _id: "desc" })
-    
+      .sort({ order: "asc", _id: "desc" });
 
     return response.status(200).json({
       _status: ress.length > 0,
@@ -113,7 +107,7 @@ exports.destroy = async (request, response) => {
         _data: null,
       });
     }
-
+    cache.del("materialData");
     return response.status(200).json({
       _status: true,
       _message: "Data Deleted",
@@ -194,7 +188,7 @@ exports.update = async (request, response) => {
         _data: null,
       });
     }
-
+    cache.del("materialData");
     return response.status(200).json({
       _status: true,
       _message: "Data Updated",
@@ -258,7 +252,7 @@ exports.changeStatus = async (request, response) => {
         _data: null,
       });
     }
-
+    cache.del("materialData");
     return response.status(200).json({
       _status: true,
       _message: "Status Changed",

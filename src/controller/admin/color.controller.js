@@ -1,11 +1,11 @@
 const color = require("../../models/color");
-
+const cache = require("../../lib/cache");
 // create
 exports.create = async (request, response) => {
   try {
     const data = new color(request.body);
     const ress = await data.save();
-
+    cache.del("colorData");
     return response.status(201).json({
       _status: true,
       _message: "Data Inserted",
@@ -107,8 +107,7 @@ exports.destroy = async (request, response) => {
         },
       }
     );
-
-
+    cache.del("colorData");
 
     return response.status(200).json({
       _status: true,
@@ -190,7 +189,7 @@ exports.update = async (request, response) => {
         _data: null,
       });
     }
-
+    cache.del("colorData");
     return response.status(200).json({
       _status: true,
       _message: "Data Updated",
@@ -246,7 +245,7 @@ exports.changeStatus = async (request, response) => {
         },
       ]
     );
-
+    cache.del("colorData");
     if (result.matchedCount === 0) {
       return response.status(404).json({
         _status: false,

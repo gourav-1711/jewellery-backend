@@ -1,9 +1,21 @@
 const categoryModel = require("../../models/category");
 const subCategoryModel = require("../../models/subCategory");
 const subSubCategoryModel = require("../../models/subSubCategory");
+const cache = require("../../lib/cache");
 
 exports.navController = async (req, res) => {
   try {
+    const cacheKey = "navigationData";
+    const cachedData = cache.get(cacheKey);
+
+    if (cachedData) {
+      console.log("Data fetched from cache");
+      return res.status(200).json({
+        _status: true,
+        _message: "Data fetched successfully",
+        _data: cachedData,
+      });
+    }
     // Fetch all data with ALL fields (including image)
     const categories = await categoryModel
       .find({ deletedAt: null, status: true })
@@ -57,7 +69,7 @@ exports.navController = async (req, res) => {
         subCategories: categorySubCategories,
       };
     });
-
+    cache.set(cacheKey, navigationData);
     res.status(200).json({
       _status: true,
       _message: "Data fetched successfully",

@@ -1,17 +1,6 @@
 const logoModal = require("../../models/logo");
-const { uploadToR2, deleteFromR2 } = require("../../lib/cloudflare");
-
-const getFileNameFromUrl = (url) => {
-  if (!url) return null;
-  const urlParts = url.split("/");
-  const bucketIndex = urlParts.findIndex(
-    (part) => part === process.env.CLOUDFLARE_BUCKET_NAME
-  );
-  if (bucketIndex !== -1 && bucketIndex < urlParts.length - 1) {
-    return urlParts.slice(bucketIndex + 1).join("/");
-  }
-  return null;
-};
+const { uploadToR2 } = require("../../lib/cloudflare");
+const cache = require("../../lib/cache");
 
 // create logo
 exports.create = async (req, res) => {
@@ -30,7 +19,7 @@ exports.create = async (req, res) => {
     }
 
     const logo = await logoModal.create(data);
-
+    cache.del("logoData"); 
     const output = {
       _status: true,
       _message: "Logo Created Successfully",
@@ -114,7 +103,7 @@ exports.update = async (req, res) => {
       _message: "Logo Updated Successfully",
       _data: logo,
     };
-
+    cache.del("logoData"); 
     res.status(200).json(output);
   } catch (error) {
     const output = {
@@ -150,7 +139,7 @@ exports.destroy = async (req, res) => {
       _message: "Logo Deleted Permanently",
       _data: logo,
     };
-
+    cache.del("logoData"); 
     res.status(200).json(output);
   } catch (error) {
     const output = {
@@ -186,7 +175,7 @@ exports.changeStatus = async (req, res) => {
       _message: "Status Changed Successfully",
       _data: logo,
     };
-
+    cache.del("logoData"); 
     res.status(200).json(output);
   } catch (error) {
     const output = {

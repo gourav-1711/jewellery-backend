@@ -1,5 +1,5 @@
 const faqs = require("../../models/faq");
-
+const cache = require("../../lib/cache");
 // create
 exports.create = async (request, response) => {
   try {
@@ -26,7 +26,7 @@ exports.create = async (request, response) => {
     } else {
       messages.push(err.message || "Something went wrong");
     }
-
+    cache.del("faqData");
     const output = {
       _status: false,
       _message: messages,
@@ -102,7 +102,7 @@ exports.destroy = async (request, response) => {
         },
       }
     );
-
+    cache.del("faqData");
     const output = {
       _status: true,
       _message: "Data Deleted",
@@ -162,7 +162,7 @@ exports.update = async (request, response) => {
         },
       }
     );
-
+    cache.del("faqData");
     const output = {
       _status: true,
       _message: "Data Updated",
@@ -198,7 +198,7 @@ exports.changeStatus = async (request, response) => {
         },
       ]
     );
-
+    cache.del("faqData");
     const output = {
       _status: true,
       _message: "Status Changed",

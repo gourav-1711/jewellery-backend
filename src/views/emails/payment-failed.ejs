@@ -66,8 +66,9 @@
 </head>
 <body>
     <div class="header">
-        <img src="<%= logoUrl || 'https://your-jewellery-store.com/logo.png' %>" alt="Jewellery Walla" class="logo">
+       
         <h1>Payment Failed for Order #<%= orderId %></h1>
+        <p>Message From Jewellry Wala Customer Support</p>
     </div>
 
     <div class="content">
@@ -83,13 +84,13 @@
             <p><strong>Date:</strong> <%= new Date().toLocaleString() %></p>
         </div>
 
-        <p>Don't worry, your order has been saved. You can try the payment again by clicking the button below:</p>
+        <p>Don't worry, your order has been saved. You can try the payment again by going to profile and clicking on the order</p>
         
-        <a href="<%= retryPaymentUrl || '#' %>" class="button">Retry Payment</a>
+        
 
         <p>If you continue to experience issues, please contact our customer support for assistance.</p>
         
-        <p>Need help? Contact our support team at <a href="mailto:support@jewellerywalla.com">support@jewellerywalla.com</a></p>
+        <p>Need help? Contact our support team at <a href="mailto:<%= contactEmail %>"><%= contactEmail %></a></p>
     </div>
 
     <div class="footer">

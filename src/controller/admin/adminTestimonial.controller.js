@@ -1,6 +1,6 @@
 const testimonial = require("../../models/testimonial");
 const { uploadToR2 } = require("../../lib/cloudflare");
-
+const cache = require("../../lib/cache");
 // create
 exports.create = async (request, response) => {
   try {
@@ -18,7 +18,7 @@ exports.create = async (request, response) => {
     }
 
     const ress = await data.save();
-
+    cache.del("testimonialData");
     const output = {
       _status: true,
       _message: "Data Inserted",
@@ -119,7 +119,7 @@ exports.destroy = async (request, response) => {
         },
       }
     );
-
+    cache.del("testimonialData");
     const output = {
       _status: true,
       _message: "Data Deleted",
@@ -189,7 +189,7 @@ exports.update = async (request, response) => {
         $set: data,
       }
     );
-
+    cache.del("testimonialData");
     const output = {
       _status: true,
       _message: "Data Updated",
@@ -225,7 +225,7 @@ exports.changeStatus = async (request, response) => {
         },
       ]
     );
-
+    cache.del("testimonialData");
     const output = {
       _status: true,
       _message: "Status Changed",

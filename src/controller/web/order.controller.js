@@ -4,6 +4,7 @@ const Order = require("../../models/order.js");
 const Product = require("../../models/product.js");
 const Cart = require("../../models/cart.js");
 require("dotenv").config();
+const { sendEmail } = require("../../lib/nodemailer");
 // Initialize Razorpay
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -15,35 +16,12 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+const generatePackageId = () => {
+  const string = process.env.APP_NAME;
+  return string + "-" + Math.floor(100000 + Math.random() * 900000).toString();
+};
+
 // Email placeholder function
-const sendEmail = async (to, subject, body) => {
-  console.log("📧 Sending Email:");
-  console.log("To:", to);
-  console.log("Subject:", subject);
-  console.log("Body:", body);
-  // TODO: Integrate with email service (Nodemailer, SendGrid, etc.)
-  return true;
-};
-
-// Send OTP via email/SMS
-const sendOTP = async (email, phone, otp, orderId) => {
-  const emailBody = `
-    Your order ${orderId} has been confirmed!
-    
-    Delivery OTP: ${otp}
-    
-    Please share this OTP with the delivery person at the time of delivery.
-    
-    Thank you for shopping with us!
-  `;
-
-  await sendEmail(email, "Order Confirmed - Delivery OTP", emailBody);
-
-  // TODO: Send SMS with OTP
-  console.log("📱 SMS OTP:", otp, "to", phone);
-
-  return otp;
-};
 
 // ============================================
 // ORDER CONTROLLERS
@@ -71,8 +49,8 @@ exports.createOrder = async (req, res) => {
 
     // Handle Cart Purchase
     if (purchaseType === "cart") {
-      const cart = await Cart.findOne({ userId }).populate("items.productId");
-
+      const cart = await Cart.findOne({ user: userId }).populate("items.product");
+      console.log(cart);
       if (!cart || cart.items.length === 0) {
         return res.status(400).json({
           success: false,
@@ -82,14 +60,14 @@ exports.createOrder = async (req, res) => {
 
       // Process cart items
       for (const cartItem of cart.items) {
-        const product = cartItem.productId;
+        const product = cartItem.product;
 
         const itemSubtotal = product.price * cartItem.quantity;
         subtotal += itemSubtotal;
 
         orderItems.push({
           productId: product._id,
-          colorId: cartItem.colorId,
+          colorId: cartItem.color,
           name: product.name,
           description: product.description,
           quantity: cartItem.quantity,
@@ -293,11 +271,12 @@ exports.verifyPayment = async (req, res) => {
       await order.save();
 
       // Send failure email
-      await sendEmail(
-        order.shippingAddress.email,
-        "paymentFailed",
-        `Your payment for order ${order.orderId} has failed. Please try again.`
-      );
+      await sendEmail(order.shippingAddress.email, "paymentFailed", {
+        orderId: order.orderId,
+        customerName: order.shippingAddress.name || "Customer",
+        orderTotal: `₹${order.pricing.total}`,
+        contactEmail: process.env.MY_GMAIL,
+      });
 
       return res.status(400).json({
         success: false,
@@ -327,19 +306,18 @@ exports.verifyPayment = async (req, res) => {
 
     // Reduce stock for each item
     for (const item of order.items) {
-      const product = await Product.findById(item.productId);
-      if (product) {
-        const colorVariant = product.colors.id(item.colorId);
-        if (colorVariant) {
-          colorVariant.stock -= item.quantity;
-          await product.save();
-        }
-      }
+      await Product.findByIdAndUpdate(item.productId, {
+        $inc: { stock: -item.quantity },
+      });
     }
 
     // Generate OTP for delivery
     const deliveryOTP = generateOTP();
     order.notes.internal = `Delivery OTP: ${deliveryOTP}`;
+
+    // Generate package ID
+    const packageId = generatePackageId();
+    order.packageId = packageId;
 
     await order.save();
 
@@ -348,19 +326,23 @@ exports.verifyPayment = async (req, res) => {
       await Cart.findOneAndUpdate({ userId }, { $set: { items: [] } });
     }
 
-    // Send OTP and success email
-    await sendOTP(
-      order.shippingAddress.email,
-      order.shippingAddress.phone,
-      deliveryOTP,
-      order.orderId
-    );
-
-    await sendEmail(
-      order.shippingAddress.email,
-      "orderConfirmed",
-      `Your order ${order.orderId} has been confirmed! Total: ₹${order.pricing.total}. Delivery OTP: ${deliveryOTP}`
-    );
+    await sendEmail(order.shippingAddress.email, "orderConfirmed", {
+      orderId: order.orderId,
+      packageId: packageId,
+      orderDate: new Date().toLocaleString(),
+      customerName: order.shippingAddress.name || "Customer",
+      orderTotal: order.pricing.total,
+      subtotal: order.pricing.subtotal,
+      discount: order.pricing.discount?.amount || 0,
+      shipping: order.pricing.shipping,
+      total: order.pricing.total,
+      deliveryOTP: deliveryOTP,
+      contactEmail: process.env.MY_GMAIL,
+      items: order.items,
+      shippingAddress: order.shippingAddress,
+      billingAddress: order.billingAddress || order.shippingAddress,
+      paymentMethod: "Online Payment",
+    });
 
     res.status(200).json({
       success: true,
@@ -369,6 +351,7 @@ exports.verifyPayment = async (req, res) => {
         orderId: order.orderId,
         status: order.status,
         deliveryOTP,
+        packageId,
       },
     });
   } catch (error) {

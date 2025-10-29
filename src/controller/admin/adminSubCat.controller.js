@@ -3,6 +3,7 @@ const subCategory = require("../../models/subCategory");
 // Import the uploadToR2 function from lib folder
 const { uploadToR2 } = require("../../lib/cloudflare");
 require("dotenv").config();
+const cache = require("../../lib/cache");
 
 // create
 exports.create = async (request, response) => {
@@ -24,7 +25,7 @@ exports.create = async (request, response) => {
     data.slug = slug;
 
     const ress = await data.save();
-
+    cache.del("navigationData");
     const output = {
       _status: true,
       _message: "Data Inserted",
@@ -137,7 +138,7 @@ exports.destroy = async (request, response) => {
       _message: "Data Deleted",
       _data: result,
     };
-
+    cache.del("navigationData");
     response.send(output);
   } catch (err) {
     const output = {
@@ -209,7 +210,7 @@ exports.update = async (request, response) => {
       _message: "Data Updated",
       _data: ress,
     };
-
+    cache.del("navigationData");
     response.send(output);
   } catch (err) {
     const output = {
@@ -217,7 +218,7 @@ exports.update = async (request, response) => {
       _message: "No Data Updated",
       _data: err.message || null,
     };
-
+    cache.del("navigationData");
     response.send(output);
   }
 };
@@ -245,7 +246,7 @@ exports.changeStatus = async (request, response) => {
       _message: "Status Changed",
       _data: result,
     };
-
+    cache.del("navigationData");
     response.send(output);
   } catch (err) {
     const output = {
@@ -253,7 +254,7 @@ exports.changeStatus = async (request, response) => {
       _message: "Status Not Changed",
       _data: err.message || null,
     };
-
+    cache.del("navigationData");
     response.send(output);
   }
 };

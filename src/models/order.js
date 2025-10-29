@@ -17,7 +17,7 @@ const orderSchema = new mongoose.Schema(
     // User information
     userId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "users",
       required: true,
       index: true,
     },
@@ -35,12 +35,13 @@ const orderSchema = new mongoose.Schema(
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
+          ref: "products",
           required: true,
         },
         // Color/Variant ID (required for both cart and direct)
         colorId: {
           type: mongoose.Schema.Types.ObjectId,
+          ref: "colors",
           required: true,
         },
         name: {
@@ -107,7 +108,7 @@ const orderSchema = new mongoose.Schema(
         couponCode: String,
         couponId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Coupon",
+          ref: "coupons",
         },
       },
 
@@ -257,6 +258,11 @@ const orderSchema = new mongoose.Schema(
     notes: {
       customer: String, // Customer notes
       internal: String, // Internal admin notes
+    },
+
+    packageId: {
+      type: String,
+      default: null,
     },
 
     // Gift options

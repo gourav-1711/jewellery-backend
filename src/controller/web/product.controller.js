@@ -22,7 +22,8 @@ exports.getOne = async (request, response) => {
       .populate("material", "name ")
       .populate("category", "name slug")
       .populate("subCategory", "name slug")
-      .populate("subSubCategory", "name slug");
+      .populate("subSubCategory", "name slug")
+      .lean();
 
     if (!product) {
       throw new Error("Product not found");
@@ -156,7 +157,9 @@ exports.getProductByFilter = async (req, res) => {
         slug: Array.isArray(categorySlug)
           ? { $in: categorySlug }
           : categorySlug,
-      }).select("_id");
+      })
+        .select("_id")
+        .lean();
       if (categories.length > 0) {
         query.category = { $in: categories.map((c) => c._id) };
       }
@@ -167,7 +170,9 @@ exports.getProductByFilter = async (req, res) => {
         slug: Array.isArray(subCategorySlug)
           ? { $in: subCategorySlug }
           : subCategorySlug,
-      }).select("_id");
+      })
+        .select("_id")
+        .lean();
       if (subCategories.length > 0) {
         query.subCategory = { $in: subCategories.map((c) => c._id) };
       }
@@ -178,7 +183,9 @@ exports.getProductByFilter = async (req, res) => {
         slug: Array.isArray(subSubCategorySlug)
           ? { $in: subSubCategorySlug }
           : subSubCategorySlug,
-      }).select("_id");
+      })
+        .select("_id")
+        .lean();
       if (subSubCategories.length > 0) {
         query.subSubCategory = { $in: subSubCategories.map((c) => c._id) };
       }
@@ -211,7 +218,8 @@ exports.getProductByFilter = async (req, res) => {
       .populate("material", "name ")
       .limit(limit)
       .skip(skip)
-      .sort("-createdAt");
+      .sort("-createdAt")
+      .lean();
 
     res.send({
       _status: true,
@@ -270,7 +278,8 @@ exports.getBySearch = async (req, res) => {
       .populate("colors", "name code")
       .populate("material", "name ")
       .sort("-createdAt")
-      .limit(20);
+      .limit(20)
+      .lean();
 
     res.send({
       _status: true,
@@ -297,7 +306,8 @@ exports.getAll = async (req, res) => {
       .populate("category", "name slug")
       .populate("subCategory", "name slug")
       .populate("subSubCategory", "name slug")
-      .sort("-createdAt");
+      .sort("-createdAt")
+      .lean();
     res.send({
       _status: true,
       _message: "Products fetched successfully",
@@ -330,7 +340,8 @@ exports.relatedProducts = async (req, res) => {
         .populate("subCategory", "name slug")
         .populate("subSubCategory", "name slug")
         .populate("colors", "name code")
-        .populate("material", "name");
+        .populate("material", "name")
+        .lean();
     }
 
     // If we don't have enough products (less than 10), fill with subCategory matches
@@ -349,7 +360,8 @@ exports.relatedProducts = async (req, res) => {
         .populate("subCategory", "name slug")
         .populate("subSubCategory", "name slug")
         .populate("colors", "name code")
-        .populate("material", "name");
+        .populate("material", "name")
+        .lean();
 
       products = [...products, ...subCategoryProducts];
     }

@@ -1,7 +1,7 @@
 const category = require("../../models/category");
 const { generateUniqueSlug } = require("../../lib/slugFunc");
 const { uploadToR2 } = require("../../lib/cloudflare");
-
+const cache = require("../../lib/cache");
 // create
 exports.create = async (request, response) => {
   if (!request.body) {
@@ -22,7 +22,6 @@ exports.create = async (request, response) => {
 
     // Upload image to Cloudflare R2 if file exists
     if (request.file) {
-      
       const uploadResult = await uploadToR2(request.file, "categories");
 
       if (uploadResult.success) {
@@ -33,7 +32,7 @@ exports.create = async (request, response) => {
     }
 
     const ress = await data.save();
-
+    cache.del("navigationData");
     const output = {
       _status: true,
       _message: "Data Inserted",
@@ -68,7 +67,6 @@ exports.create = async (request, response) => {
 // view
 exports.view = async (request, response) => {
   try {
-   
     let skipValue;
 
     const andCondition = [{ deletedAt: null }];
@@ -83,7 +81,6 @@ exports.view = async (request, response) => {
     }
 
     if (request.body != undefined) {
-     
       if (request.body.name != undefined) {
         const name = new RegExp(request.body.name, "i");
         orCondition.push({ name: name });
@@ -98,18 +95,15 @@ exports.view = async (request, response) => {
       filter.$or = orCondition;
     }
 
-    const totalRecords = await category.find(filter).countDocuments();
-
     const ress = await category
       .find(filter)
       .sort({ order: "asc", _id: "desc" })
-    
+      .lean();
 
     const output = {
       _status: ress.length > 0,
       _message: ress.length > 0 ? "Data Found" : "No Data Found",
       _data: ress.length > 0 ? ress : [],
-     
     };
 
     response.send(output);
@@ -143,7 +137,7 @@ exports.destroy = async (request, response) => {
       _message: "Data Deleted",
       _data: result,
     };
-
+    cache.del("navigationData");
     response.send(output);
   } catch (err) {
     const output = {
@@ -216,6 +210,7 @@ exports.update = async (request, response) => {
       _data: ress,
     };
 
+    cache.del("navigationData");
     response.send(output);
   } catch (err) {
     const output = {
@@ -252,6 +247,7 @@ exports.changeStatus = async (request, response) => {
       _data: result,
     };
 
+    cache.del("navigationData");
     response.send(output);
   } catch (err) {
     const output = {
