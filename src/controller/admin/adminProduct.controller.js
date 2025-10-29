@@ -5,6 +5,7 @@ const SubCategory = require("../../models/subCategory");
 const SubSubCategory = require("../../models/subSubCategory");
 const { uploadToR2, deleteFromR2 } = require("../../lib/cloudflare");
 const { generateUniqueSlug } = require("../../lib/slugFunc");
+const cache = require("../../lib/cache");
 
 // Create Product
 exports.create = async (request, response) => {
@@ -86,7 +87,10 @@ exports.create = async (request, response) => {
     }
 
     const ress = await data.save();
-
+    cache.del("newArrivals");
+    cache.del("trendingProducts");
+    cache.del("featuredForFooter");
+    cache.del("tabProducts");
     const output = {
       _status: true,
       _message: "Product created successfully",
@@ -266,9 +270,11 @@ exports.update = async (request, response) => {
       // Handle additional images
       if (request.files?.images?.length > 0) {
         updateData.images = existingProduct.images || [];
-        if(removeImagesUrl.length > 0){
+        if (removeImagesUrl.length > 0) {
           removeImagesUrl.forEach((url) => {
-            updateData.images = updateData.images.filter((image) => image !== url);
+            updateData.images = updateData.images.filter(
+              (image) => image !== url
+            );
           });
         }
 
@@ -369,7 +375,10 @@ exports.update = async (request, response) => {
     }
 
     const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {});
-
+    cache.del("newArrivals");
+    cache.del("trendingProducts");
+    cache.del("featuredForFooter");
+    cache.del("tabProducts");
     const output = {
       _status: true,
       _message: "Product updated successfully",
@@ -408,7 +417,11 @@ exports.destroy = async (req, res) => {
     const product = await Product.findById(id);
 
     if (!product) {
-      throw new Error("Product not found");
+      return res.send({
+        _status: false,
+        _message: "Product not found",
+        _data: null,
+      });
     }
     product.deletedAt = Date.now();
     await Product.findByIdAndUpdate(
@@ -416,6 +429,10 @@ exports.destroy = async (req, res) => {
       { deletedAt: Date.now() },
       { new: true }
     );
+    cache.del("newArrivals");
+    cache.del("trendingProducts");
+    cache.del("featuredForFooter");
+    cache.del("tabProducts");
     res.send({
       _status: true,
       _message: "Product deleted successfully",
@@ -450,9 +467,16 @@ exports.changeStatus = async (req, res) => {
     );
 
     if (!product) {
-      throw new Error("Product not found");
+      return res.send({
+        _status: false,
+        _message: "Product not found",
+        _data: null,
+      });
     }
-
+    cache.del("newArrivals");
+    cache.del("trendingProducts");
+    cache.del("featuredForFooter");
+    cache.del("tabProducts");
     res.send({
       _status: true,
       _message: "Product status changed successfully",

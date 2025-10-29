@@ -8,6 +8,10 @@ const {
   getBySearch,
   getAll,
   relatedProducts,
+  tabProducts,
+  newArrivals,
+  trendingProducts,
+  featuredForFooter,
 } = require("../../controller/web/product.controller");
 const { uploadNone } = require("../../middleware/uploadMiddleware");
 // Category routes
@@ -20,6 +24,11 @@ router.post(
 router.post("/get-by-filter", uploadNone, getProductByFilter);
 router.post("/get-by-search", uploadNone, getBySearch);
 router.post("/get-related-products", uploadNone, relatedProducts);
+// tab products
+router.post("/tab-products", uploadNone,  tabProducts);
+router.post("/new-arrivals", uploadNone, newArrivals);
+router.post("/trending-products", uploadNone, trendingProducts);
+router.post("/featured-for-footer", uploadNone, featuredForFooter);
 
 // sitemap products
 router.post("/all", uploadNone, getAll);

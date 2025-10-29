@@ -3,6 +3,8 @@ const Category = require("../../models/category");
 const SubCategory = require("../../models/subCategory");
 const SubSubCategory = require("../../models/subSubCategory");
 
+const cache = require("../../lib/cache");
+
 // Get Single Product by ID or Slug
 exports.getOne = async (request, response) => {
   try {
@@ -376,6 +378,226 @@ exports.relatedProducts = async (req, res) => {
       _status: false,
       _message: err.message || "Something went wrong",
       _data: [],
+    });
+  }
+};
+
+//////////////////////////////////
+
+// HOME PAGE API
+
+//////////////////////////////////////
+
+// new arrivals
+exports.newArrivals = async (req, res) => {
+  try {
+    if (cache.has("newArrivals")) {
+      return res.send({
+        _status: true,
+        _message: "Products fetched successfully",
+        _data: cache.get("newArrivals"),
+      });
+    }
+    const products = await Product.find({
+      isNewArrival: true,
+      deletedAt: null,
+      status: true,
+    })
+      .populate("category", "name slug")
+      .populate("subCategory", "name slug")
+      .populate("subSubCategory", "name slug")
+      .populate("colors", "name code")
+      .populate("material", "name ")
+      .sort("-createdAt")
+      .limit(20)
+      .lean();
+
+    cache.set("newArrivals", products);
+
+    res.send({
+      _status: true,
+      _message: "Products fetched successfully",
+      _data: products,
+    });
+  } catch (err) {
+    res.send({
+      _status: false,
+      _message: err.message || "Something went wrong",
+      _data: [],
+    });
+  }
+};
+
+// trending products
+exports.trendingProducts = async (req, res) => {
+  try {
+    if (cache.has("trendingProducts")) {
+      return res.send({
+        _status: true,
+        _message: "Products fetched successfully",
+        _data: cache.get("trendingProducts"),
+      });
+    }
+    const products = await Product.find({
+      isTrending: true,
+      deletedAt: null,
+      status: true,
+    })
+      .populate("category", "name slug")
+      .populate("subCategory", "name slug")
+      .populate("subSubCategory", "name slug")
+      .populate("colors", "name code")
+      .populate("material", "name ")
+      .sort("-createdAt")
+      .limit(20)
+      .lean();
+
+    cache.set("trendingProducts", products);
+
+    res.send({
+      _status: true,
+      _message: "Products fetched successfully",
+      _data: products,
+    });
+  } catch (err) {
+    res.send({
+      _status: false,
+      _message: err.message || "Something went wrong",
+      _data: [],
+    });
+  }
+};
+
+// 2 featured for footer
+exports.featuredForFooter = async (req, res) => {
+  try {
+    if (cache.has("featuredForFooter")) {
+      return res.send({
+        _status: true,
+        _message: "Products fetched successfully",
+        _data: cache.get("featuredForFooter"),
+      });
+    }
+    const products = await Product.find({
+      isFeatured: true,
+      deletedAt: null,
+      status: true,
+    })
+      .populate("category", "name slug")
+      .populate("subCategory", "name slug")
+      .populate("subSubCategory", "name slug")
+      .populate("colors", "name code")
+      .populate("material", "name ")
+      .sort("-createdAt")
+      .limit(2)
+      .lean();
+
+    cache.set("featuredForFooter", products);
+
+    res.send({
+      _status: true,
+      _message: "Products fetched successfully",
+      _data: products,
+    });
+  } catch (err) {
+    res.send({
+      _status: false,
+      _message: err.message || "Something went wrong",
+      _data: [],
+    });
+  }
+};
+
+// for tabbing gold material silver material and is gift 4 per tab
+exports.tabProducts = async (req, res) => {
+  try {
+    if (cache.has("tabProducts")) {
+      return res.send({
+        _status: true,
+        _message: "Products fetched successfully",
+        _data: cache.get("tabProducts"),
+      });
+    }
+
+    const [goldProducts, silverProducts, giftProducts] = await Promise.all([
+      Product.find({
+        deletedAt: null,
+        status: true,
+        material: { $exists: true },
+      })
+        .populate({
+          path: "material",
+          match: { name: { $regex: "gold", $options: "i" } },
+          select: "name",
+        })
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
+        .populate("subSubCategory", "name slug")
+        .populate("colors", "name code")
+        .sort("-createdAt")
+        .limit(4)
+        .lean(),
+
+      Product.find({
+        deletedAt: null,
+        status: true,
+        material: { $exists: true },
+      })
+        .populate({
+          path: "material",
+          match: { name: { $regex: "silver", $options: "i" } },
+          select: "name",
+        })
+        .populate("category", "name slug")
+        .populate("subCategory", "name slug")
+        .populate("subSubCategory", "name slug")
+        .populate("colors", "name code")
+        .sort("-createdAt")
+        .limit(4)
+        .lean(),
+
+      Product.find({
+        deletedAt: null,
+        status: true,
+        isGift: true,
+      })
+        .populate({
+          path: "category",
+          match: { slug: { regex: "gift-items", options: "i" } },
+          select: "name slug",
+        })
+        .populate("subCategory", "name slug")
+        .populate("subSubCategory", "name slug")
+        .populate("colors", "name code")
+        .populate("material", "name")
+        .sort("-createdAt")
+        .limit(4)
+        .lean(),
+    ]);
+
+    const goldFiltered = goldProducts.filter((p) => p.material);
+    const silverFiltered = silverProducts.filter((p) => p.material);
+
+    cache.set("tabProducts", {
+      gold: goldFiltered,
+      silver: silverFiltered,
+      gift: giftProducts,
+    });
+
+    res.send({
+      _status: true,
+      _message: "Tab products fetched successfully",
+      _data: {
+        gold: goldFiltered,
+        silver: silverFiltered,
+        gift: giftProducts,
+      },
+    });
+  } catch (err) {
+    res.send({
+      _status: false,
+      _message: err.message || "Something went wrong",
+      _data: { gold: [], silver: [], gift: [] },
     });
   }
 };

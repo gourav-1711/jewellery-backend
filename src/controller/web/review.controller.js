@@ -69,7 +69,8 @@ exports.getReviewsByProduct = async (req, res) => {
       deletedAt: null,
     })
       .populate("userId", "name email avatar")
-      .sort("-createdAt");
+      .sort("-createdAt")
+      .lean();
 
     const avgRating =
       reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length;
