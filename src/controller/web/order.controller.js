@@ -49,7 +49,9 @@ exports.createOrder = async (req, res) => {
 
     // Handle Cart Purchase
     if (purchaseType === "cart") {
-      const cart = await Cart.findOne({ user: userId }).populate("items.product");
+      const cart = await Cart.findOne({ user: userId }).populate(
+        "items.product"
+      );
       console.log(cart);
       if (!cart || cart.items.length === 0) {
         return res.status(400).json({
@@ -449,7 +451,8 @@ exports.getUserOrders = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .populate("items.productId", "name images");
+      .populate("items.productId", "name images slug")
+      .lean();
 
     const count = await Order.countDocuments(query);
 
@@ -476,9 +479,10 @@ exports.getOrderById = async (req, res) => {
     const { orderId } = req.params;
     const userId = req.user._id;
 
-    const order = await Order.findOne({ orderId, userId }).populate(
-      "items.productId"
-    );
+    const order = await Order.findOne({ orderId, userId })
+      .populate("items.productId", "name images slug")
+      .select("-payment.razorpay.signature")
+      .lean();
 
     if (!order) {
       return res.status(404).json({
@@ -528,11 +532,8 @@ exports.cancelOrder = async (req, res) => {
     for (const item of order.items) {
       const product = await Product.findById(item.productId);
       if (product) {
-        const colorVariant = product.colors.id(item.colorId);
-        if (colorVariant) {
-          colorVariant.stock += item.quantity;
-          await product.save();
-        }
+        product.stock += item.quantity;
+        await product.save();
       }
     }
 
@@ -543,6 +544,21 @@ exports.cancelOrder = async (req, res) => {
       cancelledAt: new Date(),
       refundStatus: "pending",
     };
+
+    const refundAmount = order.pricing.total;
+    try {
+      const refund = await razorpay.payments.refund(
+        order.payment.razorpay.paymentId,
+        {
+          amount: refundAmount * 100,
+          speed: "normal",
+          notes: {
+            orderId: order.orderId,
+            reason,
+          },
+        }
+      );
+    } catch (error) {}
 
     await order.save();
 
