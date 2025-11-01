@@ -8,14 +8,13 @@ const {
   getOrderById,
   cancelOrder,
   verifyDeliveryOTP,
+  markToShipped,
+  getAllOrders,
+  getOrder,
 } = require("../../controller/web/order.controller.js");
 const protect = require("../../middleware/authMiddleware.js"); // Your auth middleware
-
+const { uploadNone } = require("../../middleware/uploadMiddleware.js");
 const router = express.Router();
-
-// ============================================
-// USER ROUTES (Protected)
-// ============================================
 
 // Create order (from cart or direct purchase)
 router.post("/create", protect, createOrder);
@@ -27,17 +26,16 @@ router.post("/create-razorpay-order", protect, createRazorpayOrder);
 router.post("/verify-payment", protect, verifyPayment);
 
 // Get all user orders (with pagination and filters)
-router.get("/my-orders", protect, getUserOrders);
+router.get("/my-orders", protect, uploadNone, getUserOrders);
 
 // Get single order details
-router.get("/:orderId", protect, getOrderById);
+router.get("/:orderId", protect, uploadNone, getOrderById);
+
+// Get single order details
+router.post("/delivery/:orderId", protect, uploadNone, getOrder);
 
 // Cancel order
-router.put("/:orderId/cancel", protect, cancelOrder);
-
-// ============================================
-// WEBHOOK ROUTE (Not protected - uses signature verification)
-// ============================================
+router.put("/:orderId/cancel", protect, uploadNone, cancelOrder);
 
 // Razorpay webhook
 router.post(
@@ -46,11 +44,11 @@ router.post(
   handleWebhook
 );
 
-// ============================================
-// DELIVERY ROUTES
-// ============================================
-
 // Verify delivery OTP (can be used by delivery person)
-router.post("/verify-delivery-otp", verifyDeliveryOTP);
+router.post("/verify-delivery-otp", protect, uploadNone, verifyDeliveryOTP);
+
+router.post("/mark-to-shipped", protect, uploadNone, markToShipped);
+
+router.post("/all", protect, uploadNone, getAllOrders);
 
 module.exports = router;

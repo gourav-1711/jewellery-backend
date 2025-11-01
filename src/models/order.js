@@ -207,7 +207,7 @@ const orderSchema = new mongoose.Schema(
         "confirmed", // Payment successful
         "processing", // Being prepared
         "shipped", // Dispatched
-        "out_for_delivery", // Out for delivery
+        // "out_for_delivery", // Out for delivery
         "delivered", // Successfully delivered
         "cancelled", // Cancelled by user/admin
         "refunded", // Money refunded

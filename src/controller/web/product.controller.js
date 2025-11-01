@@ -439,7 +439,7 @@ exports.trendingProducts = async (req, res) => {
       });
     }
     const products = await Product.find({
-      isTrending: true,
+      isUpsell: true,
       deletedAt: null,
       status: true,
     })

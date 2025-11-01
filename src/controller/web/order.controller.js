@@ -478,6 +478,7 @@ exports.getOrderById = async (req, res) => {
   try {
     const { orderId } = req.params;
     const userId = req.user._id;
+    
 
     const order = await Order.findOne({ orderId, userId })
       .populate("items.productId", "name images slug")
@@ -504,6 +505,39 @@ exports.getOrderById = async (req, res) => {
     });
   }
 };
+
+exports.getOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+   
+    
+
+    const order = await Order.findOne({ orderId })
+      .populate("items.productId", "name images slug")
+      .select("-payment.razorpay.signature")
+      .lean();
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (error) {
+    console.error("Get Order Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch order",
+      error: error.message,
+    });
+  }
+};
+
 
 // 7. Cancel Order
 exports.cancelOrder = async (req, res) => {
@@ -598,6 +632,13 @@ exports.verifyDeliveryOTP = async (req, res) => {
       });
     }
 
+    if (order.status !== "shipped") {
+      return res.status(400).json({
+        success: false,
+        message: "Order cannot be marked as delivered",
+      });
+    }
+
     // Extract OTP from internal notes
     const storedOTP = order.notes.internal?.match(/Delivery OTP: (\d{6})/)?.[1];
 
@@ -621,6 +662,70 @@ exports.verifyDeliveryOTP = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to verify OTP",
+      error: error.message,
+    });
+  }
+};
+
+exports.markToShipped = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    const order = await Order.findOne({ orderId });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    if (order.status !== "confirmed") {
+      return res.status(400).json({
+        success: false,
+        message: "Order cannot be marked as shipped",
+      });
+    }
+
+    order.status = "shipped";
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order marked as shipped successfully",
+    });
+  } catch (error) {
+    console.error("Mark to Shipped Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark order as shipped",
+      error: error.message,
+    });
+  }
+};
+
+//
+exports.getAllOrders = async (req, res) => {
+  let query = { deletedAt: null };
+  if (req.body.status) {
+    query.status = req.body.status;
+  }
+  try {
+    const orders = await Order.find(query)
+      .sort({ createdAt: -1 })
+      .populate("items.productId", "name images slug")
+      .select("-payment.razorpay.signature")
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      message: "Orders fetched successfully",
+      data: orders,
+    });
+  } catch (error) {
+    console.error("Get All Orders Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch orders",
       error: error.message,
     });
   }

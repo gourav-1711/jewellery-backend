@@ -152,6 +152,8 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+productSchema.index({ name: 1 });
+
 const productModal = mongoose.model("products", productSchema);
 
 module.exports = productModal;

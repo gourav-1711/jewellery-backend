@@ -15,11 +15,13 @@ const subSubCategorySchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    subCategory: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "SubCategories",
-      required: [true, "Sub-category reference is required"],
-    }],
+    subCategory: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "SubCategories",
+        required: [true, "Sub-category reference is required"],
+      },
+    ],
     image: {
       type: String,
       required: [true, "Image URL is required"],
@@ -45,10 +47,11 @@ const subSubCategorySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-   
   }
 );
 
+subSubCategorySchema.index({ slug: 1 }, { unique: true });
+subSubCategorySchema.index({ name: 1 }, { unique: true });
 
 const SubSubCategory = mongoose.model("SubSubCategories", subSubCategorySchema);
 

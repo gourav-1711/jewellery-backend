@@ -44,6 +44,9 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
+categorySchema.index({ slug: 1 }, { unique: true });
+categorySchema.index({ name: 1 }, { unique: true });
+
 const Category = mongoose.model("Categories", categorySchema);
 
 module.exports = Category;
